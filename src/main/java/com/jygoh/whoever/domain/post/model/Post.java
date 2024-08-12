@@ -59,8 +59,8 @@ public class Post {
         this.title = title;
         this.content = content;
         this.author = author;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.comments = comments;
         this.hashtags = hashtags;
     }
