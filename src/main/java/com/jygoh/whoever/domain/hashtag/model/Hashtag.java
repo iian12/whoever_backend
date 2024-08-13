@@ -19,7 +19,7 @@ public class Hashtag {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long hashtagId;
+    private Long id;
 
     private String name;
 
@@ -31,5 +31,4 @@ public class Hashtag {
         this.name = name;
         this.posts = posts;
     }
-
 }

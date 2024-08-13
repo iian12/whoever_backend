@@ -64,4 +64,11 @@ public class Post {
         this.comments = comments;
         this.hashtags = hashtags;
     }
+
+    public void update(String title, String content, List<Hashtag> hashtags) {
+        this.title = title;
+        this.content = content;
+        this.hashtags = hashtags;
+        this.updatedAt = LocalDateTime.now(); // 수정 시간 업데이트
+    }
 }

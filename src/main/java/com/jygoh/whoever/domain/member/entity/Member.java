@@ -39,7 +39,7 @@ public class Member {
     @OneToMany(mappedBy = "author")
     private List<Comment> comments;
 
-    @Builder
+    @Builder(toBuilder = true)
     public Member(String username, String password, String email, Role role, List<Post> posts, List<Comment> comments) {
         this.username = username;
         this.password = password;
@@ -47,5 +47,11 @@ public class Member {
         this.role = role;
         this.posts = posts;
         this.comments = comments;
+    }
+
+    public void updateProfile(String username, String email, String encodedPassword) {
+        this.username = username;
+        this.email = email;
+        this.password = encodedPassword;
     }
 }

@@ -7,18 +7,14 @@ import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
-public class MemberCreateRequestDto {
+public class MemberLoginRequestDto {
 
     private String username;
-
     private String password;
 
-    private String email;
-
     @Builder
-    public MemberCreateRequestDto(String username, String password, String email) {
+    public MemberLoginRequestDto(String username, String password) {
         this.username = username;
         this.password = password;
-        this.email = email;
     }
 }
