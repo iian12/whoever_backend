@@ -2,11 +2,11 @@ package com.jygoh.whoever.domain.member.dto;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Setter
-public class MemberModifyRequestDto {
+@NoArgsConstructor
+public class MemberUpdateRequestDto {
 
     private String username;
 
@@ -14,10 +14,13 @@ public class MemberModifyRequestDto {
 
     private String email;
 
+    private String nickname;
+
     @Builder
-    public MemberModifyRequestDto(String username, String password, String email) {
+    public MemberUpdateRequestDto(String username, String password, String email, String nickname) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.nickname = nickname;
     }
 }

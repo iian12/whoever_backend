@@ -30,6 +30,8 @@ public class Member {
 
     private String email;
 
+    private String nickname;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -39,13 +41,21 @@ public class Member {
     @OneToMany(mappedBy = "author")
     private List<Comment> comments;
 
-    @Builder
-    public Member(String username, String password, String email, Role role, List<Post> posts, List<Comment> comments) {
+    @Builder(toBuilder = true)
+    public Member(String username, String password, String email, String nickname, Role role, List<Post> posts, List<Comment> comments) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.nickname = nickname;
         this.role = role;
         this.posts = posts;
         this.comments = comments;
+    }
+
+    public void updateProfile(String username, String email, String nickname, String encodedPassword) {
+        this.username = username;
+        this.email = email;
+        this.nickname = nickname;
+        this.password = encodedPassword;
     }
 }

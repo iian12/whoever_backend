@@ -1,11 +1,13 @@
 package com.jygoh.whoever.domain.member.dto;
 
+import com.jygoh.whoever.domain.member.entity.Member;
+import com.jygoh.whoever.domain.member.entity.Role;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Setter
+@NoArgsConstructor
 public class MemberCreateRequestDto {
 
     private String username;
@@ -14,10 +16,23 @@ public class MemberCreateRequestDto {
 
     private String email;
 
+    private String nickname;
+
     @Builder
-    public MemberCreateRequestDto(String username, String password, String email) {
+    public MemberCreateRequestDto(String username, String password, String email, String nickname) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.nickname = nickname;
+    }
+
+    public Member toEntity() {
+        return Member.builder()
+                .username(this.username)
+                .password(this.password) // 비밀번호는 보통 인코딩된 상태로 전달해야 함
+                .email(this.email)
+                .nickname(this.nickname)
+                .role(Role.MEMBER)
+                .build();
     }
 }

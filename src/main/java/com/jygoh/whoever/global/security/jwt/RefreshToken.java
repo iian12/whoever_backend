@@ -1,12 +1,9 @@
-package com.jygoh.whoever.domain.hashtag.model;
+package com.jygoh.whoever.global.security.jwt;
 
-import com.jygoh.whoever.domain.post.model.Post;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,20 +12,26 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Hashtag {
+public class RefreshToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private Long userId;
 
-    @ManyToMany(mappedBy = "hashtags")
-    private List<Post> posts;
+    private String token;
 
     @Builder
-    public Hashtag(String name, List<Post> posts) {
-        this.name = name;
-        this.posts = posts;
+    public RefreshToken(Long userId, String token) {
+        this.userId = userId;
+        this.token = token;
+    }
+
+    public RefreshToken updateToken(String newToken) {
+        return RefreshToken.builder()
+                .userId(this.userId)
+                .token(newToken)
+                .build();
     }
 }
