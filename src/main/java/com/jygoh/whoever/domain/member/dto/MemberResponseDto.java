@@ -14,12 +14,15 @@ public class MemberResponseDto {
 
     private String email;
 
+    private String nickname;
+
     private String role;
 
     public MemberResponseDto(Member member) {
         this.id = member.getId();
         this.username = member.getUsername();
         this.email = member.getEmail();
+        this.nickname = member.getNickname();
         this.role = member.getRole().name();
     }
 }

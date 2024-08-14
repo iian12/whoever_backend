@@ -3,7 +3,6 @@ package com.jygoh.whoever.domain.member.dto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @NoArgsConstructor

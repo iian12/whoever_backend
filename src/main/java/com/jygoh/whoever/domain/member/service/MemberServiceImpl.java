@@ -1,18 +1,14 @@
 package com.jygoh.whoever.domain.member.service;
 
-import com.jygoh.whoever.domain.member.dto.MemberCreateRequestDto;
-import com.jygoh.whoever.domain.member.dto.MemberLoginRequestDto;
-import com.jygoh.whoever.domain.member.dto.MemberProfileResponseDto;
-import com.jygoh.whoever.domain.member.dto.MemberResponseDto;
-import com.jygoh.whoever.domain.member.dto.MemberUpdateRequestDto;
+import com.jygoh.whoever.domain.member.dto.*;
 import com.jygoh.whoever.domain.member.entity.Member;
-import com.jygoh.whoever.domain.member.entity.Role;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -30,28 +26,22 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Long register(MemberCreateRequestDto requestDto) {
-        Member member = Member.builder()
-            .username(requestDto.getUsername())
-            .password(passwordEncoder.encode(requestDto.getPassword()))
-            .email(requestDto.getEmail())
-            .role(Role.MEMBER)
-            .build();
+
+        if (memberRepository.existsByUsername(requestDto.getUsername())) {
+            throw new IllegalArgumentException("이미 사용 중인 사용자 이름입니다.");
+        }
+
+        if (memberRepository.existsByEmail(requestDto.getEmail())) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+
+        Member member = requestDto.toEntity().toBuilder()
+                .password(encodedPassword).build();
 
         memberRepository.save(member);
         return member.getId();
-    }
-
-    @Override
-    public String Login(MemberLoginRequestDto requestDto) {
-        Member member = memberRepository.findByUsername(requestDto.getUsername())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid Username or Password"));
-
-        if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword())) {
-            throw new IllegalArgumentException("Invalid Username or Password");
-        }
-
-        return "Login successful";
-        // 로그인 성공 시, JWT 토큰 반환 에정
     }
 
     @Override
@@ -62,6 +52,7 @@ public class MemberServiceImpl implements MemberService {
         member.updateProfile(
             requestDto.getUsername(),
             requestDto.getEmail(),
+            requestDto.getNickname(),
             passwordEncoder.encode(requestDto.getPassword())
         );
     }
@@ -90,10 +81,10 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MemberProfileResponseDto getMemberProfileById(Long id) {
+    public MyProfileResponseDto getMemberProfileById(Long id) {
         Member member = memberRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
-        return new MemberProfileResponseDto(member);
+        return new MyProfileResponseDto(member);
     }
 }

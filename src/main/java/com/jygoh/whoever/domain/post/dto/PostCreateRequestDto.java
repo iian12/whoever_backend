@@ -17,15 +17,12 @@ public class PostCreateRequestDto {
 
     private String content;
 
-    private Long authorId;
-
     private List<Long> hashtagIds;
 
     @Builder
-    public PostCreateRequestDto(String title, String content, Long authorId, List<Long> hashtagIds) {
+    public PostCreateRequestDto(String title, String content, List<Long> hashtagIds) {
         this.title = title;
         this.content = content;
-        this.authorId = authorId;
         this.hashtagIds = hashtagIds;
     }
 

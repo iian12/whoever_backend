@@ -10,19 +10,21 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class MemberProfileResponseDto {
+public class MyProfileResponseDto {
 
     private Long id;
     private String username;
     private String email;
+    private String nickname;
     private String role;
     private List<PostForProfileDto> posts;
     private List<CommentForProfileDto> comments;
 
-    public MemberProfileResponseDto(Member member) {
+    public MyProfileResponseDto(Member member) {
         this.id = member.getId();
         this.username = member.getUsername();
         this.email = member.getEmail();
+        this.nickname = member.getNickname();
         this.role = member.getRole().name();
         this.posts = member.getPosts()
             .stream().map(PostForProfileDto::new).collect(Collectors.toList());

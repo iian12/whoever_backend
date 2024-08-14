@@ -5,11 +5,16 @@ import com.jygoh.whoever.domain.hashtag.repository.HashtagRepository;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.domain.post.dto.PostCreateRequestDto;
+import com.jygoh.whoever.domain.post.dto.PostDetailResponseDto;
+import com.jygoh.whoever.domain.post.dto.PostListResponseDto;
 import com.jygoh.whoever.domain.post.dto.PostUpdateRequestDto;
 import com.jygoh.whoever.domain.post.model.Post;
 import com.jygoh.whoever.domain.post.repository.PostRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,33 +25,27 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
     private final HashtagRepository hashtagRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
-
-    public PostServiceImpl(PostRepository postRepository,
-        MemberRepository memberRepository,
-        HashtagRepository hashtagRepository) {
-
+    public PostServiceImpl(PostRepository postRepository, MemberRepository memberRepository,
+        HashtagRepository hashtagRepository, JwtTokenProvider jwtTokenProvider) {
         this.postRepository = postRepository;
         this.memberRepository = memberRepository;
         this.hashtagRepository = hashtagRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Override
-    public Long createPost(PostCreateRequestDto requestDto) {
+    public Long createPost(PostCreateRequestDto requestDto, String token) {
 
-        Member author = memberRepository.findById(requestDto.getAuthorId())
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+
+        Member author = memberRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid author ID"));
 
         List<Hashtag> hashtags = hashtagRepository.findAllById(requestDto.getHashtagIds());
 
-        Post post = Post.builder()
-            .title(requestDto.getTitle())
-            .content(requestDto.getContent())
-            .author(author)
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
-            .hashtags(hashtags)
-            .build();
+        Post post = requestDto.toEntity(author, hashtags);
 
         postRepository.save(post);
 
@@ -74,5 +73,22 @@ public class PostServiceImpl implements PostService {
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
         postRepository.delete(post);
+    }
+
+    @Override
+    public List<PostListResponseDto> getAllPosts() {
+        List<Post> posts = postRepository.findAll();
+
+        return posts.stream()
+                .map(PostListResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public PostDetailResponseDto getPostDetail(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        return new PostDetailResponseDto(post);
     }
 }
