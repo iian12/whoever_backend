@@ -3,10 +3,11 @@ package com.jygoh.whoever.domain.member.dto;
 import com.jygoh.whoever.domain.comment.model.Comment;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.post.model.Post;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
@@ -49,10 +50,24 @@ public class MyProfileResponseDto {
     public static class CommentForProfileDto {
         private Long id;
         private String content;
+        private PostForCommentDto post;
 
         public CommentForProfileDto(Comment comment) {
             this.id = comment.getId();
             this.content = comment.getContent();
+            this.post = new PostForCommentDto(comment.getPost());
+        }
+
+        @Getter
+        @NoArgsConstructor
+        public static class PostForCommentDto {
+            private Long id;
+            private String title;
+
+            public PostForCommentDto(Post post) {
+                this.id = post.getId();
+                this.title = post.getTitle();
+            }
         }
     }
 }

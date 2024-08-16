@@ -1,4 +1,4 @@
 package com.jygoh.whoever.domain.comment.dto;
 
-public class CommentModifyRequestDto {
+public class CommentUpdateRequestDto {
 }
