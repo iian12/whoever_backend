@@ -10,11 +10,9 @@ import com.jygoh.whoever.domain.post.dto.PostListResponseDto;
 import com.jygoh.whoever.domain.post.dto.PostUpdateRequestDto;
 import com.jygoh.whoever.domain.post.model.Post;
 import com.jygoh.whoever.domain.post.repository.PostRepository;
-import java.time.LocalDateTime;
+import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

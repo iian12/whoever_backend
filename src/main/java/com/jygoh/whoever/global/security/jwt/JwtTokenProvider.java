@@ -4,6 +4,10 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import java.util.Base64;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +26,15 @@ public class JwtTokenProvider {
     private long accessTokenValidityInMilliseconds;// 1시간
 
     @Value("${jwt.refresh-token-validity-in-ms}")
-    private final long refreshTokenValidityInMilliseconds = 604800000; // 7일
+    private long refreshTokenValidityInMilliseconds; // 7일
 
-    private Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+    private Key key;
+
+    @PostConstruct
+    protected void init() {
+        byte[] keyBytes = Base64.getDecoder().decode(secretKey);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     public String createAccessToken(Long userId) {
         // 토큰에 담을 클레임 정보
@@ -39,7 +49,7 @@ public class JwtTokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(key)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -53,7 +63,7 @@ public class JwtTokenProvider {
                 .setSubject(userId.toString())
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(key)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
