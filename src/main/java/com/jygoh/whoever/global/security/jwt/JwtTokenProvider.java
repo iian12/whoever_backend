@@ -5,13 +5,11 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import java.util.Base64;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +35,10 @@ public class JwtTokenProvider {
     }
 
     public String createAccessToken(Long userId) {
+
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         // 토큰에 담을 클레임 정보
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
@@ -69,6 +71,10 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
+            if (token == null || token.isEmpty()) {
+                return false;
+            }
+
             Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
@@ -80,12 +86,23 @@ public class JwtTokenProvider {
     }
 
     public Long getUserIdFromToken(String token) {
+        if (token == null || token.isEmpty()) {
+            throw new IllegalArgumentException("Token cannot be null or empty");
+        }
+
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
 
-        return Long.parseLong(claims.getSubject());
+        // Long 타입으로 클레임 값을 가져옵니다
+        Number userIdNumber = claims.get("userId", Number.class);
+
+        if (userIdNumber == null) {
+            throw new IllegalArgumentException("User ID in token cannot be null or empty");
+        }
+
+        return userIdNumber.longValue();
     }
 }

@@ -1,25 +1,23 @@
 package com.jygoh.whoever.auth;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.jygoh.whoever.domain.member.dto.MemberCreateRequestDto;
 import com.jygoh.whoever.domain.member.dto.MemberLoginRequestDto;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.domain.member.service.MemberService;
-import com.jygoh.whoever.domain.member.service.MemberServiceImpl;
 import com.jygoh.whoever.global.auth.AuthService;
 import com.jygoh.whoever.global.security.jwt.RefreshToken;
 import com.jygoh.whoever.global.security.jwt.RefreshTokenRepository;
 import com.jygoh.whoever.global.security.jwt.TokenResponseDto;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional

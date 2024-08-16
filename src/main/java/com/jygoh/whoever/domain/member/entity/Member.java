@@ -2,13 +2,9 @@ package com.jygoh.whoever.domain.member.entity;
 
 import com.jygoh.whoever.domain.comment.model.Comment;
 import com.jygoh.whoever.domain.post.model.Post;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -32,24 +28,24 @@ public class Member {
 
     private String nickname;
 
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
     @OneToMany(mappedBy = "author")
-    private List<Post> posts;
-
-    @OneToMany(mappedBy = "author")
-    private List<Comment> comments;
+    private List<Comment> comments = new ArrayList<>();
 
     @Builder(toBuilder = true)
-    public Member(String username, String password, String email, String nickname, Role role, List<Post> posts, List<Comment> comments) {
+    public Member(String username, String password, String email, String nickname, List<Post> posts, Role role, List<Comment> comments) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.nickname = nickname;
+        this.posts = posts != null ? posts : new ArrayList<>();
         this.role = role;
-        this.posts = posts;
-        this.comments = comments;
+        this.comments = comments != null ? comments : new ArrayList<>();
     }
 
     public void updateProfile(String username, String email, String nickname, String encodedPassword) {

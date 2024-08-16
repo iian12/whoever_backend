@@ -1,53 +1,57 @@
 package com.jygoh.whoever.domain.post.service;
 
 import com.jygoh.whoever.domain.hashtag.model.Hashtag;
-import com.jygoh.whoever.domain.hashtag.repository.HashtagRepository;
+import com.jygoh.whoever.domain.hashtag.service.HashtagService;
 import com.jygoh.whoever.domain.member.entity.Member;
-import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.domain.post.dto.PostCreateRequestDto;
 import com.jygoh.whoever.domain.post.dto.PostDetailResponseDto;
 import com.jygoh.whoever.domain.post.dto.PostListResponseDto;
 import com.jygoh.whoever.domain.post.dto.PostUpdateRequestDto;
 import com.jygoh.whoever.domain.post.model.Post;
 import com.jygoh.whoever.domain.post.repository.PostRepository;
+import com.jygoh.whoever.global.auth.CustomUserDetails;
+import com.jygoh.whoever.global.auth.CustomUserDetailsService;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
-    private final MemberRepository memberRepository;
-    private final HashtagRepository hashtagRepository;
+    private final HashtagService hashtagService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CustomUserDetailsService customUserDetailsService;
 
-    public PostServiceImpl(PostRepository postRepository, MemberRepository memberRepository,
-        HashtagRepository hashtagRepository, JwtTokenProvider jwtTokenProvider) {
+    public PostServiceImpl(PostRepository postRepository,
+         HashtagService hashtagService, JwtTokenProvider jwtTokenProvider, CustomUserDetailsService customUserDetailsService) {
         this.postRepository = postRepository;
-        this.memberRepository = memberRepository;
-        this.hashtagRepository = hashtagRepository;
+        this.hashtagService = hashtagService;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @Override
     public Long createPost(PostCreateRequestDto requestDto, String token) {
 
-        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+       Long userId = jwtTokenProvider.getUserIdFromToken(token);
 
-        Member author = memberRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid author ID"));
+       UserDetails userDetails = customUserDetailsService.loadUserById(userId);
 
-        List<Hashtag> hashtags = hashtagRepository.findAllById(requestDto.getHashtagIds());
+       Member author = ((CustomUserDetails) userDetails).getMember();
 
-        Post post = requestDto.toEntity(author, hashtags);
+       List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
 
-        postRepository.save(post);
+       Post post = requestDto.toEntity(author, author.getNickname(), hashtags);
 
-        return post.getId();
+       postRepository.save(post);
+
+       return post.getId();
     }
 
     @Override
@@ -56,7 +60,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
-        List<Hashtag> hashtags = hashtagRepository.findAllById(requestDto.getHashtagIds());
+        List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
 
         // Post 엔티티의 도메인 메서드를 사용하여 업데이트
         post.update(requestDto.getTitle(), requestDto.getContent(), hashtags);
