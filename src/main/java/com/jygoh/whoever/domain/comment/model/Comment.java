@@ -12,6 +12,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -35,6 +36,8 @@ public class Comment {
     @JoinColumn(name = "author_id", nullable = false)
     private Member author;
 
+    private String authorNickname;
+
     @Lob
     private String content;
 
@@ -43,20 +46,26 @@ public class Comment {
     private Comment parentComment;
 
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL)
-    private List<Comment> replies;
+    private List<Comment> replies = new ArrayList<>();
 
     private LocalDateTime createdAt;
 
     private Boolean isUpdated;
 
     @Builder
-    public Comment(Post post, Member author, String content, Comment parentComment, List<Comment> replies,LocalDateTime createdAt, Boolean isUpdated) {
+    public Comment(Post post, Member author, String authorNickname, String content, Comment parentComment, List<Comment> replies, LocalDateTime createdAt, Boolean isUpdated) {
         this.post = post;
         this.author = author;
+        this.authorNickname = authorNickname;
         this.content = content;
         this.parentComment = parentComment;
-        this.replies = replies;
+        this.replies = replies != null ? replies : new ArrayList<>();
         this.createdAt = createdAt;
         this.isUpdated = isUpdated;
+    }
+
+    public void updateComment(String content) {
+        this.content = content;
+        this.isUpdated = true;
     }
 }

@@ -2,6 +2,7 @@ package com.jygoh.whoever.domain.post.controller;
 
 import com.jygoh.whoever.domain.post.dto.PostCreateRequestDto;
 import com.jygoh.whoever.domain.post.service.PostService;
+import com.jygoh.whoever.global.security.jwt.TokenUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,17 +20,9 @@ public class PostController {
         this.postService = postService;
     }
 
-    private String extractTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        throw new IllegalArgumentException("Invalid or missing Authorization header");
-    }
-
     @PostMapping
     public ResponseEntity<Long> createPost(@RequestBody PostCreateRequestDto requestDto, HttpServletRequest request) {
-        String token = extractTokenFromRequest(request);
+        String token = TokenUtils.extractTokenFromRequest(request);
 
         Long postId = postService.createPost(requestDto, token);
 
