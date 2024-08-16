@@ -17,23 +17,24 @@ public class PostCreateRequestDto {
 
     private String content;
 
-    private List<Long> hashtagIds;
+    private List<String> hashtagNames;
 
     @Builder
-    public PostCreateRequestDto(String title, String content, List<Long> hashtagIds) {
+    public PostCreateRequestDto(String title, String content, List<String> hashtagNames) {
         this.title = title;
         this.content = content;
-        this.hashtagIds = hashtagIds;
+        this.hashtagNames = hashtagNames;
     }
 
-    public Post toEntity(Member author, List<Hashtag> hashtags) {
+    public Post toEntity(Member author, String authorNickname, List<Hashtag> hashtags) {
         return Post.builder()
-            .title(this.title)
-            .content(this.content)
-            .author(author)
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
-            .hashtags(hashtags)
-            .build();
+                .title(this.title)
+                .content(this.content)
+                .author(author)
+                .authorNickname(authorNickname)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .hashtags(hashtags)
+                .build();
     }
 }

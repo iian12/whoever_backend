@@ -13,14 +13,14 @@ public class PostListResponseDto {
 
     private Long id;
     private String title;
-    private String authorName;
+    private String authorNickname;
     private LocalDateTime createdAt;
 
     @Builder
     public PostListResponseDto(Post post) {
         this.id = post.getId();
         this.title = post.getTitle();
-        this.authorName = post.getAuthor().getUsername();
+        this.authorNickname = post.getAuthorNickname();
         this.createdAt = post.getCreatedAt();
     }
 }
