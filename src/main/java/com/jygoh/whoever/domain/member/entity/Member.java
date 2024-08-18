@@ -1,11 +1,15 @@
 package com.jygoh.whoever.domain.member.entity;
 
 import com.jygoh.whoever.domain.comment.model.Comment;
+import com.jygoh.whoever.domain.friend.model.Friendship;
 import com.jygoh.whoever.domain.post.model.Post;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,6 +32,12 @@ public class Member {
 
     private String nickname;
 
+    @OneToMany(mappedBy = "member1", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Friendship> friendshipsAsMember1 = new HashSet<>();
+
+    @OneToMany(mappedBy = "member2", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Friendship> friendshipsAsMember2 = new HashSet<>();
+
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
@@ -38,11 +48,13 @@ public class Member {
     private List<Comment> comments = new ArrayList<>();
 
     @Builder(toBuilder = true)
-    public Member(String username, String password, String email, String nickname, List<Post> posts, Role role, List<Comment> comments) {
+    public Member(String username, String password, String email, String nickname, Set<Friendship> friendshipsAsMember1, Set<Friendship> friendshipsAsMember2, List<Post> posts, Role role, List<Comment> comments) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.nickname = nickname;
+        this.friendshipsAsMember1 = friendshipsAsMember1 != null ? friendshipsAsMember1 : new HashSet<>();
+        this.friendshipsAsMember2 = friendshipsAsMember2 != null ? friendshipsAsMember2 : new HashSet<>();
         this.posts = posts != null ? posts : new ArrayList<>();
         this.role = role;
         this.comments = comments != null ? comments : new ArrayList<>();
