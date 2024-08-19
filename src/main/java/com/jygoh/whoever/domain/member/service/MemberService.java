@@ -12,7 +12,6 @@ public interface MemberService {
     Long register(MemberCreateRequestDto requestDto);
     void updateMember(Long id, MemberUpdateRequestDto requestDto);
     void deleteMember(Long id);
-    MemberResponseDto getMemberById(Long id);
-    List<MemberResponseDto> getAllMembers();
-    MyProfileResponseDto getMemberProfileById(Long id);
+    MemberResponseDto getMemberProfileById(Long id);
+    MyProfileResponseDto getMyProfile(String token);
 }
