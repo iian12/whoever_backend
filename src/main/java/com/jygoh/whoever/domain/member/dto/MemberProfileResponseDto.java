@@ -3,6 +3,7 @@ package com.jygoh.whoever.domain.member.dto;
 import com.jygoh.whoever.domain.comment.model.Comment;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.post.model.Post;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,20 +14,19 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class MemberProfileResponseDto {
 
-    private Long id;
-    private String username;
     private String nickname;
     private List<MemberProfileResponseDto.PostForProfileDto> posts;
     private List<MemberProfileResponseDto.CommentForProfileDto> comments;
+    private int followerCount;
 
-    public MemberProfileResponseDto(Member member) {
-        this.id = member.getId();
-        this.username = member.getUsername();
-        this.nickname = member.getNickname();
-        this.posts = member.getPosts()
-                .stream().map(MemberProfileResponseDto.PostForProfileDto::new).collect(Collectors.toList());
-        this.comments = member.getComments()
-                .stream().map(MemberProfileResponseDto.CommentForProfileDto::new).collect(Collectors.toList());
+    @Builder
+    public MemberProfileResponseDto(String nickname,
+        List<PostForProfileDto> posts, List<CommentForProfileDto> comments,
+        int followerCount) {
+        this.nickname = nickname;
+        this.posts = posts;
+        this.comments = comments;
+        this.followerCount = followerCount;
     }
 
     @Getter

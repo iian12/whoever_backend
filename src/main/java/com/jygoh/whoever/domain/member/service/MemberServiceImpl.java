@@ -69,11 +69,11 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MemberResponseDto getMemberProfileById(Long id) {
-        Member member = memberRepository.findById(id)
+    public MemberProfileResponseDto getMemberProfileByNickname(String nickname) {
+        Member member = memberRepository.findByNickname(nickname)
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
-        return new MemberResponseDto(member);
+        return MemberProfileResponseDtoFactory.createFromMember(member);
     }
 
     @Override
@@ -81,25 +81,6 @@ public class MemberServiceImpl implements MemberService {
         Long memberId = jwtTokenProvider.getUserIdFromToken(token);
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-        return convertToDto(member);
-    }
-
-    private MyProfileResponseDto convertToDto(Member member) {
-        return MyProfileResponseDto.builder()
-            .id(member.getId())
-            .username(member.getUsername())
-            .email(member.getEmail())
-            .nickname(member.getNickname())
-            .role(member.getRole().name())
-            .posts(member.getPosts().stream()
-                .map(MyProfileResponseDto.PostForProfileDto::new)
-                .collect(Collectors.toList()))
-            .comments(member.getComments().stream()
-                .map(MyProfileResponseDto.CommentForProfileDto::new)
-                .collect(Collectors.toList()))
-            .following(member.getFollowing().stream()
-                .map(follow -> new MyProfileResponseDto.FollowForProfileDto(follow.getFollowee()))
-                .collect(Collectors.toList()))
-            .build();
+        return MyProfileResponseDtoFactory.createFromMember(member);
     }
 }

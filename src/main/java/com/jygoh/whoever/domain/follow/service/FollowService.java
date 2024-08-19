@@ -10,4 +10,6 @@ public interface FollowService {
     void unfollow(String token, Long followeeId);
 
     List<FollowResponseDto> getFollowing(String token);
+
+    int getFollowerCount(Long memberId);
 }

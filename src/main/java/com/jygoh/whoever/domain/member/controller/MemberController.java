@@ -1,6 +1,7 @@
 package com.jygoh.whoever.domain.member.controller;
 
 import com.jygoh.whoever.domain.member.dto.MemberCreateRequestDto;
+import com.jygoh.whoever.domain.member.dto.MemberProfileResponseDto;
 import com.jygoh.whoever.domain.member.dto.MyProfileResponseDto;
 import com.jygoh.whoever.domain.member.service.MemberService;
 import com.jygoh.whoever.global.security.jwt.TokenUtils;
@@ -8,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +30,12 @@ public class MemberController {
         Long memberId = memberService.register(requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(memberId);
+    }
+
+    @GetMapping("/profile/{nickname}")
+    public ResponseEntity<MemberProfileResponseDto> getMemberProfile(@PathVariable String nickname) {
+        MemberProfileResponseDto profile = memberService.getMemberProfileByNickname(nickname);
+        return ResponseEntity.ok(profile);
     }
 
     @GetMapping("/me")

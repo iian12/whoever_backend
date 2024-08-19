@@ -8,6 +8,7 @@ import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,11 @@ public class FollowServiceImpl implements FollowService {
             throw new IllegalArgumentException("A user cannot follow themselves.");
         }
 
+        Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowee(follower, followee);
+        if (existingFollow.isPresent()) {
+            throw new IllegalStateException("You are already following this user.");
+        }
+
         Follow follow = Follow.builder()
             .follower(follower)
             .followee(followee)
@@ -45,19 +51,26 @@ public class FollowServiceImpl implements FollowService {
             .build();
 
         followRepository.save(follow);
+
+        followee.increaseFollowerCount();
     }
 
     @Override
     public void unfollow(String token, Long followeeId) {
 
         Long followerId = jwtTokenProvider.getUserIdFromToken(token);
-        Member follower = memberRepository.findById(followerId).orElseThrow();
-        Member followee = memberRepository.findById(followeeId).orElseThrow();
+        Member follower = memberRepository.findById(followerId)
+            .orElseThrow(() -> new IllegalArgumentException("Follower not found"));
+        Member followee = memberRepository.findById(followeeId)
+            .orElseThrow(() -> new IllegalArgumentException("Followee not found"));
 
+        // Check if the follow relationship exists before trying to delete
         Follow follow = followRepository.findByFollowerAndFollowee(follower, followee)
             .orElseThrow(() -> new IllegalArgumentException("Follow relationship does not exist."));
 
         followRepository.delete(follow);
+
+        followee.decreaseFollowerCount();
     }
 
     @Override
@@ -69,5 +82,14 @@ public class FollowServiceImpl implements FollowService {
         return member.getFollowing().stream()
             .map(follow -> new FollowResponseDto(follow.getFollowee()))
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public int getFollowerCount(Long memberId) {
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        return member.getFollowers().size();
     }
 }

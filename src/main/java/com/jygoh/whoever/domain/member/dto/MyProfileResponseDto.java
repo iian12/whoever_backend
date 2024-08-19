@@ -3,18 +3,15 @@ package com.jygoh.whoever.domain.member.dto;
 import com.jygoh.whoever.domain.comment.model.Comment;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.post.model.Post;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
 public class MyProfileResponseDto {
 
-    private Long id;
     private String username;
     private String email;
     private String nickname;
@@ -22,12 +19,13 @@ public class MyProfileResponseDto {
     private List<PostForProfileDto> posts;
     private List<CommentForProfileDto> comments;
     private List<FollowForProfileDto> following;
+    private int followerCount;
 
     @Builder
-    public MyProfileResponseDto(Long id, String username, String email, String nickname,
+    public MyProfileResponseDto(String username, String email, String nickname,
         String role, List<PostForProfileDto> posts,
-        List<CommentForProfileDto> comments, List<FollowForProfileDto> following) {
-        this.id = id;
+        List<CommentForProfileDto> comments, List<FollowForProfileDto> following,
+        int followerCount) {
         this.username = username;
         this.email = email;
         this.nickname = nickname;
@@ -35,6 +33,7 @@ public class MyProfileResponseDto {
         this.posts = posts;
         this.comments = comments;
         this.following = following;
+        this.followerCount = followerCount;
     }
 
     @Getter
