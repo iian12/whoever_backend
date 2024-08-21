@@ -49,7 +49,11 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = requestDto.toEntity(post, author, author.getNickname(), parentComment);
 
+
         commentRepository.save(comment);
+
+        post.incrementCommentCount();
+        postRepository.save(post);
 
         return comment.getId();
     }

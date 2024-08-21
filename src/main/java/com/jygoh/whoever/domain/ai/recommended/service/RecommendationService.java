@@ -1,4 +1,4 @@
-package com.jygoh.whoever.domain.ai.service;
+package com.jygoh.whoever.domain.ai.recommended.service;
 
 public interface RecommendationService {
 

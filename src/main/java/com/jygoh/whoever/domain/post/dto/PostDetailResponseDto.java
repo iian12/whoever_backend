@@ -26,6 +26,8 @@ public class PostDetailResponseDto {
     private LocalDateTime updatedAt;
     private List<CommentDto> comments;
     private List<HashtagDto> hashtags;
+    private int viewCount;
+    private int commentCount;
 
     @Builder
     public PostDetailResponseDto(Post post) {
@@ -41,6 +43,8 @@ public class PostDetailResponseDto {
         this.hashtags = post.getHashtags().stream()
             .map(HashtagDto::new)
             .collect(Collectors.toList());
+        this.viewCount = post.getViewCount();
+        this.commentCount = post.getCommentCount();
     }
 
     private String convertMarkdownToHtml(String markdownContent) {

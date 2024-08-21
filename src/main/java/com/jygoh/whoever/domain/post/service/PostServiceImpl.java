@@ -12,6 +12,10 @@ import com.jygoh.whoever.domain.post.repository.PostRepository;
 import com.jygoh.whoever.global.auth.CustomUserDetails;
 import com.jygoh.whoever.global.auth.CustomUserDetailsService;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,10 +82,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostListResponseDto> getAllPosts() {
-        List<Post> posts = postRepository.findAll();
+    public List<PostListResponseDto> getAllPosts(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
+        Page<Post> postPage = postRepository.findAll(pageable);
 
-        return posts.stream()
+        return postPage.stream()
                 .map(PostListResponseDto::new)
                 .collect(Collectors.toList());
     }
@@ -90,6 +95,9 @@ public class PostServiceImpl implements PostService {
     public PostDetailResponseDto getPostDetail(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        post.incrementViewCount();
+        postRepository.save(post);
 
         return new PostDetailResponseDto(post);
     }

@@ -40,6 +40,9 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
+    private int viewCount;
+    private int commentCount;
+
     @ManyToMany
     @JoinTable(
             name = "PostHashtag",
@@ -61,6 +64,15 @@ public class Post {
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
         this.comments = comments != null ? comments : new ArrayList<>();
         this.hashtags = hashtags != null ? hashtags : new ArrayList<>();
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
+
+    // 댓글 수 증가 메소드
+    public void incrementCommentCount() {
+        this.commentCount++;
     }
 
     public void update(String title, String content, List<Hashtag> hashtags) {

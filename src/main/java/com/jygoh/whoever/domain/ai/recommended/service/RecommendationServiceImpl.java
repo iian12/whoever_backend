@@ -1,4 +1,4 @@
-package com.jygoh.whoever.domain.ai.service;
+package com.jygoh.whoever.domain.ai.recommended.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
