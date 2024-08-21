@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 
 @Getter
 @NoArgsConstructor
@@ -29,7 +31,7 @@ public class PostDetailResponseDto {
     public PostDetailResponseDto(Post post) {
         this.id = post.getId();
         this.title = post.getTitle();
-        this.content = post.getContent();
+        this.content = convertMarkdownToHtml(post.getContent());
         this.authorNickname = post.getAuthorNickname();
         this.createdAt = post.getCreatedAt();
         this.updatedAt = post.getUpdatedAt();
@@ -39,5 +41,13 @@ public class PostDetailResponseDto {
         this.hashtags = post.getHashtags().stream()
             .map(HashtagDto::new)
             .collect(Collectors.toList());
+    }
+
+    private String convertMarkdownToHtml(String markdownContent) {
+        Parser parser = Parser.builder().build();
+
+        HtmlRenderer renderer = HtmlRenderer.builder().build();
+
+        return renderer.render(parser.parse(markdownContent));
     }
 }
