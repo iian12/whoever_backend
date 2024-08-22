@@ -1,12 +1,9 @@
-package com.jygoh.whoever.domain.follow;
+package com.jygoh.whoever.domain.follow.model;
 
 import com.jygoh.whoever.domain.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;

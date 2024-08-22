@@ -15,8 +15,8 @@ public class MailConfig {
         JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
 
         javaMailSender.setHost("smtp.gmail.com");
-        javaMailSender.setUsername("");
-        javaMailSender.setPassword("");
+        javaMailSender.setUsername("walkers061227@gmail.com");
+        javaMailSender.setPassword("fswifgonsjboxwat");
 
         javaMailSender.setPort(587);
 
@@ -31,8 +31,10 @@ public class MailConfig {
         properties.setProperty("mail.smtp.auth", "true");
         properties.setProperty("mail.smtp.starttls.enable", "true");
         properties.setProperty("mail.debug", "true");
-        properties.setProperty("mail.smtp.ssl.trust","smtp.naver.com");
-        properties.setProperty("mail.smtp.ssl.enable","true");
+
+
+        properties.setProperty("mail.smtp.ssl.trust","smtp.gmail.com");
+        properties.setProperty("mail.smtp.ssl.enable","false");
         return properties;
     }
 }

@@ -1,8 +1,8 @@
 package com.jygoh.whoever.domain.follow.service;
 
-import com.jygoh.whoever.domain.follow.Follow;
-import com.jygoh.whoever.domain.follow.FollowRepository;
-import com.jygoh.whoever.domain.follow.FollowResponseDto;
+import com.jygoh.whoever.domain.follow.model.Follow;
+import com.jygoh.whoever.domain.follow.repository.FollowRepository;
+import com.jygoh.whoever.domain.follow.dto.FollowResponseDto;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;

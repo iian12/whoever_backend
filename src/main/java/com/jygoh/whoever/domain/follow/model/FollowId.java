@@ -1,4 +1,4 @@
-package com.jygoh.whoever.domain.follow;
+package com.jygoh.whoever.domain.follow.model;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;

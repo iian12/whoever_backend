@@ -1,5 +1,6 @@
 package com.jygoh.whoever.domain.member.otp.service;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

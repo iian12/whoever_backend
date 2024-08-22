@@ -1,6 +1,6 @@
 package com.jygoh.whoever.domain.follow.service;
 
-import com.jygoh.whoever.domain.follow.FollowResponseDto;
+import com.jygoh.whoever.domain.follow.dto.FollowResponseDto;
 import java.util.List;
 
 public interface FollowService {

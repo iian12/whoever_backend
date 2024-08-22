@@ -1,4 +1,4 @@
-package com.jygoh.whoever.domain.follow;
+package com.jygoh.whoever.domain.follow.dto;
 
 import com.jygoh.whoever.domain.member.entity.Member;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.jygoh.whoever.domain.follow;
+package com.jygoh.whoever.domain.follow.controller;
 
 import com.jygoh.whoever.domain.follow.service.FollowService;
 import org.springframework.http.ResponseEntity;

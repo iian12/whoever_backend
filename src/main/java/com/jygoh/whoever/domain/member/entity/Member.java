@@ -1,7 +1,7 @@
 package com.jygoh.whoever.domain.member.entity;
 
 import com.jygoh.whoever.domain.comment.model.Comment;
-import com.jygoh.whoever.domain.follow.Follow;
+import com.jygoh.whoever.domain.follow.model.Follow;
 import com.jygoh.whoever.domain.post.model.Post;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
