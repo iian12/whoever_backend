@@ -78,7 +78,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MyProfileResponseDto getMyProfile(String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
         return MyProfileResponseDtoFactory.createFromMember(member);

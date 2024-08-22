@@ -29,9 +29,9 @@ public class FollowServiceImpl implements FollowService {
     }
 
     @Override
-    public void follow(String token, Long followeeId) {
+    public void toggleFollow(String token, Long followeeId) {
 
-        Long followerId = jwtTokenProvider.getUserIdFromToken(token);
+        Long followerId = jwtTokenProvider.getMemberIdFromToken(token);
         Member follower = memberRepository.findById(followerId).orElseThrow();
         Member followee = memberRepository.findById(followeeId).orElseThrow();
 
@@ -41,42 +41,25 @@ public class FollowServiceImpl implements FollowService {
 
         Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowee(follower, followee);
         if (existingFollow.isPresent()) {
-            throw new IllegalStateException("You are already following this user.");
+
+            followRepository.delete(existingFollow.get());
+            followee.decreaseFollowerCount();
+        } else {
+
+            Follow follow = Follow.builder()
+                .follower(follower)
+                .followee(followee)
+                .createdAt(LocalDateTime.now())
+                .build();
+            followRepository.save(follow);
+            followee.increaseFollowerCount();
         }
-
-        Follow follow = Follow.builder()
-            .follower(follower)
-            .followee(followee)
-            .createdAt(LocalDateTime.now())
-            .build();
-
-        followRepository.save(follow);
-
-        followee.increaseFollowerCount();
-    }
-
-    @Override
-    public void unfollow(String token, Long followeeId) {
-
-        Long followerId = jwtTokenProvider.getUserIdFromToken(token);
-        Member follower = memberRepository.findById(followerId)
-            .orElseThrow(() -> new IllegalArgumentException("Follower not found"));
-        Member followee = memberRepository.findById(followeeId)
-            .orElseThrow(() -> new IllegalArgumentException("Followee not found"));
-
-        // Check if the follow relationship exists before trying to delete
-        Follow follow = followRepository.findByFollowerAndFollowee(follower, followee)
-            .orElseThrow(() -> new IllegalArgumentException("Follow relationship does not exist."));
-
-        followRepository.delete(follow);
-
-        followee.decreaseFollowerCount();
     }
 
     @Override
     public List<FollowResponseDto> getFollowing(String token) {
 
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
         Member member = memberRepository.findById(memberId).orElseThrow();
 
         return member.getFollowing().stream()

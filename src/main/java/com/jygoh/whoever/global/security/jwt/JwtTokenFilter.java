@@ -33,8 +33,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
-            Long userId = jwtTokenProvider.getUserIdFromToken(token);
-            UserDetails userDetails = userDetailsService.loadUserById(userId);
+            Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
+            UserDetails userDetails = userDetailsService.loadUserById(memberId);
 
             if (userDetails != null) {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

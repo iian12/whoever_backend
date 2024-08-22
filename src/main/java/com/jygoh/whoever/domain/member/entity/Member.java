@@ -70,7 +70,8 @@ public class Member {
         this.followerCount = followerCount;
     }
 
-    public void updateProfile(String username, String email, String nickname, String encodedPassword) {
+    public void updateProfile(String username, String email,
+                                String nickname, String encodedPassword) {
         this.username = username;
         this.email = email;
         this.nickname = nickname;

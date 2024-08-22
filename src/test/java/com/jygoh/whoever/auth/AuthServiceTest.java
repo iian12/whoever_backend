@@ -68,7 +68,7 @@ public class AuthServiceTest {
         assertNotNull(tokenResponse.getRefreshToken());
 
         // 4. DB에 저장된 토큰 검증
-        Optional<RefreshToken> refreshToken = refreshTokenRepository.findByUserId(memberId);
+        Optional<RefreshToken> refreshToken = refreshTokenRepository.findByMemberId(memberId);
         assertTrue(refreshToken.isPresent());
         assertEquals(tokenResponse.getRefreshToken(), refreshToken.get().getToken());
     }

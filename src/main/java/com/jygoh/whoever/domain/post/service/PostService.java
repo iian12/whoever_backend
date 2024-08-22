@@ -17,5 +17,7 @@ public interface PostService {
 
     List<PostListResponseDto> getAllPosts(int page, int size);
 
-    PostDetailResponseDto getPostDetail(Long postId);
+    PostDetailResponseDto getPostDetail(Long postId, String token);
+
+    void toggleLike(Long postId, String token);
 }
