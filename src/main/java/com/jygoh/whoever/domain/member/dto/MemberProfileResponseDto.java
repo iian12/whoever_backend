@@ -1,14 +1,12 @@
 package com.jygoh.whoever.domain.member.dto;
 
 import com.jygoh.whoever.domain.comment.model.Comment;
-import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.post.model.Post;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor

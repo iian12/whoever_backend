@@ -17,7 +17,6 @@ import com.jygoh.whoever.domain.post.view.repository.ViewRepository;
 import com.jygoh.whoever.global.auth.CustomUserDetails;
 import com.jygoh.whoever.global.auth.CustomUserDetailsService;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.springframework.data.domain.Page;

@@ -7,7 +7,6 @@ import com.jygoh.whoever.domain.member.otp.model.OTP;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
