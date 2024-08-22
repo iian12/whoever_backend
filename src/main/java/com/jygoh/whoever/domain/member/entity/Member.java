@@ -78,6 +78,10 @@ public class Member {
         this.password = encodedPassword;
     }
 
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
     public void increaseFollowerCount() {
         this.followerCount++;
     }
