@@ -32,7 +32,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenResponseDto login(MemberLoginRequestDto requestDto) {
-        // 사용자 인증 로직
+
         Member member = memberRepository.findByUsername(requestDto.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
@@ -40,20 +40,17 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
-        Long userId = member.getId();
+        Long memberId = member.getId();
 
-        // JWT 토큰 생성
-        String accessToken = jwtTokenProvider.createAccessToken(userId);
-        String refreshToken = jwtTokenProvider.createRefreshToken(userId);
+        String accessToken = jwtTokenProvider.createAccessToken(memberId);
+        String refreshToken = jwtTokenProvider.createRefreshToken(memberId);
 
-        // 기존의 refreshToken이 있다면 삭제하고 새로운 refreshToken 저장
-        refreshTokenRepository.deleteByUserId(userId);
+        refreshTokenRepository.deleteByMemberId(memberId);
         refreshTokenRepository.save(RefreshToken.builder()
-                .userId(userId)
+                .memberId(memberId)
                 .token(refreshToken)
                 .build());
 
-        // TokenResponseDto 객체 생성
         return TokenResponseDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -66,20 +63,17 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("Invalid refresh token");
         }
 
-        Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+        Long memberId = jwtTokenProvider.getMemberIdFromToken(refreshToken);
 
-        // 기존 refreshToken 검증
-        RefreshToken existingRefreshToken = refreshTokenRepository.findByUserId(userId)
+        RefreshToken existingRefreshToken = refreshTokenRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Refresh token does not exist or is invalid"));
         if (!existingRefreshToken.getToken().equals(refreshToken)) {
             throw new IllegalArgumentException("Refresh token does not match");
         }
 
-        // 새로운 accessToken과 refreshToken 생성
-        String newAccessToken = jwtTokenProvider.createAccessToken(userId);
-        String newRefreshToken = jwtTokenProvider.createRefreshToken(userId);
+        String newAccessToken = jwtTokenProvider.createAccessToken(memberId);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(memberId);
 
-        // 새로운 refreshToken 저장
         RefreshToken updatedRefreshToken = existingRefreshToken.updateToken(newRefreshToken);
         refreshTokenRepository.save(updatedRefreshToken);
 

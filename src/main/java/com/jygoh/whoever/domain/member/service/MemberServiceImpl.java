@@ -3,6 +3,7 @@ package com.jygoh.whoever.domain.member.service;
 import com.jygoh.whoever.domain.member.dto.*;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
+import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +17,14 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public MemberServiceImpl(MemberRepository memberRepository,
-        BCryptPasswordEncoder passwordEncoder) {
+        BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
 
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Override
@@ -66,25 +69,18 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MemberResponseDto getMemberById(Long id) {
-        Member member = memberRepository.findById(id)
+    public MemberProfileResponseDto getMemberProfileByNickname(String nickname) {
+        Member member = memberRepository.findByNickname(nickname)
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
-        return new MemberResponseDto(member);
+        return MemberProfileResponseDtoFactory.createFromMember(member);
     }
 
     @Override
-    public List<MemberResponseDto> getAllMembers() {
-        return memberRepository.findAll().stream()
-            .map(MemberResponseDto::new)
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public MyProfileResponseDto getMemberProfileById(Long id) {
-        Member member = memberRepository.findById(id)
+    public MyProfileResponseDto getMyProfile(String token) {
+        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-
-        return new MyProfileResponseDto(member);
+        return MyProfileResponseDtoFactory.createFromMember(member);
     }
 }

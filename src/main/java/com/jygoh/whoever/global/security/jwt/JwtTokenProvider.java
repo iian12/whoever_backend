@@ -34,14 +34,14 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String createAccessToken(Long userId) {
+    public String createAccessToken(Long memberId) {
 
-        if (userId == null) {
+        if (memberId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
         // 토큰에 담을 클레임 정보
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", userId);
+        claims.put("memberId", memberId);
 
         Date now = new Date();
         Date validity = new Date(now.getTime() + accessTokenValidityInMilliseconds);
@@ -56,13 +56,13 @@ public class JwtTokenProvider {
     }
 
     // RefreshToken 생성
-    public String createRefreshToken(Long userId) {
+    public String createRefreshToken(Long memberId) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds);
 
         // Refresh Token은 최소한의 정보만 담음
         return Jwts.builder()
-                .setSubject(userId.toString())
+                .setSubject(memberId.toString())
                 .setIssuedAt(now)
                 .setExpiration(validity)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -85,7 +85,7 @@ public class JwtTokenProvider {
         }
     }
 
-    public Long getUserIdFromToken(String token) {
+    public Long getMemberIdFromToken(String token) {
         if (token == null || token.isEmpty()) {
             throw new IllegalArgumentException("Token cannot be null or empty");
         }
@@ -97,12 +97,12 @@ public class JwtTokenProvider {
                 .getBody();
 
         // Long 타입으로 클레임 값을 가져옵니다
-        Number userIdNumber = claims.get("userId", Number.class);
+        Number memberIdNumber = claims.get("memberId", Number.class);
 
-        if (userIdNumber == null) {
+        if (memberIdNumber == null) {
             throw new IllegalArgumentException("User ID in token cannot be null or empty");
         }
 
-        return userIdNumber.longValue();
+        return memberIdNumber.longValue();
     }
 }

@@ -40,6 +40,11 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
+    private int viewCount;
+    private int commentCount;
+    private int likeCount;
+    private int dislikeCount;
+
     @ManyToMany
     @JoinTable(
             name = "PostHashtag",
@@ -52,7 +57,7 @@ public class Post {
     public Post(String title, String content, Member author,
                 String authorNickname, LocalDateTime createdAt,
                 LocalDateTime updatedAt, List<Comment> comments,
-                List<Hashtag> hashtags) {
+                List<Hashtag> hashtags, int viewCount, int likeCount, int dislikeCount) {
         this.title = title;
         this.content = content;
         this.author = author;
@@ -61,9 +66,32 @@ public class Post {
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
         this.comments = comments != null ? comments : new ArrayList<>();
         this.hashtags = hashtags != null ? hashtags : new ArrayList<>();
+        this.viewCount = viewCount;
+        this.likeCount = likeCount;
+        this.dislikeCount = dislikeCount;
     }
 
-    public void update(String title, String content, List<Hashtag> hashtags) {
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
+
+    public void incrementCommentCount() {
+        this.commentCount++;
+    }
+
+    public void decrementCommentCount() {
+        this.commentCount--;
+    }
+
+    public void incrementLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decrementLikeCount() {
+        this.likeCount--;
+    }
+
+    public void updatePost(String title, String content, List<Hashtag> hashtags) {
         this.title = title;
         this.content = content;
         this.hashtags = hashtags;

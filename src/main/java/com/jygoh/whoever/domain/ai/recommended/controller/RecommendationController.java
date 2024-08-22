@@ -1,4 +1,4 @@
-package com.jygoh.whoever.domain.ai.controller;
+package com.jygoh.whoever.domain.ai.recommended.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

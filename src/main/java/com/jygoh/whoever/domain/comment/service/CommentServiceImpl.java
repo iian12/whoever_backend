@@ -22,7 +22,8 @@ public class CommentServiceImpl implements CommentService {
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
 
-    public CommentServiceImpl(CommentRepository commentRepository, PostRepository postRepository, JwtTokenProvider jwtTokenProvider, CustomUserDetailsService customUserDetailsService) {
+    public CommentServiceImpl(CommentRepository commentRepository, PostRepository postRepository,
+        JwtTokenProvider jwtTokenProvider, CustomUserDetailsService customUserDetailsService) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -32,9 +33,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Long createComment(CommentCreateRequestDto requestDto, String token) {
 
-        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
 
-        UserDetails userDetails = customUserDetailsService.loadUserById(userId);
+        UserDetails userDetails = customUserDetailsService.loadUserById(memberId);
 
         Member author = ((CustomUserDetails) userDetails).getMember();
 
@@ -49,7 +50,11 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = requestDto.toEntity(post, author, author.getNickname(), parentComment);
 
+
         commentRepository.save(comment);
+
+        post.incrementCommentCount();
+        postRepository.save(post);
 
         return comment.getId();
     }
