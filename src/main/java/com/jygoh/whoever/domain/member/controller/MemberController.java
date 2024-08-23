@@ -10,6 +10,7 @@ import com.jygoh.whoever.domain.member.otp.service.SendOtpRequestDto;
 import com.jygoh.whoever.domain.member.service.MemberService;
 import com.jygoh.whoever.global.security.jwt.TokenUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Slf4j
 @RequestMapping("/api/v1/member")
 public class MemberController {
 
@@ -65,7 +67,7 @@ public class MemberController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<String> verifyOtp(OtpVerifyRequestDto requestDto) {
+    public ResponseEntity<String> verifyOtp(@RequestBody OtpVerifyRequestDto requestDto) {
         try {
             boolean isValid = passwordResetService.verifyOtp(requestDto);
             return isValid ? ResponseEntity.ok("OTP is valid.") : ResponseEntity.badRequest().body("Invalid OTP.");
@@ -75,7 +77,7 @@ public class MemberController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(PasswordResetRequestDto requestDto) {
+    public ResponseEntity<String> resetPassword(@RequestBody PasswordResetRequestDto requestDto) {
         try {
             passwordResetService.resetPassword(requestDto);
             return ResponseEntity.ok("Password has been reset.");

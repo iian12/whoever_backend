@@ -7,5 +7,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SendOtpRequestDto {
 
+    private String username;
     private String email;
 }
