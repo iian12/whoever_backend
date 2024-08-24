@@ -1,24 +1,15 @@
 package com.jygoh.whoever.domain.member.entity;
 
-import com.jygoh.whoever.domain.comment.model.Comment;
-import com.jygoh.whoever.domain.follow.model.Follow;
-import com.jygoh.whoever.domain.post.model.Post;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -37,36 +28,44 @@ public class Member {
 
     private String nickname;
 
-    @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Follow> following = new HashSet<>();
+    @ElementCollection
+    @CollectionTable(name = "MemberFollowing", joinColumns = @JoinColumn(name = "member_id"))
+    @Column(name = "following_id")
+    private Set<Long> followingIds = new HashSet<>();
 
-    @OneToMany(mappedBy = "followee", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Follow> followers = new HashSet<>();
+    @ElementCollection
+    @CollectionTable(name = "MemberFollowers", joinColumns = @JoinColumn(name = "member_id"))
+    @Column(name = "follower_id")
+    private Set<Long> followerIds = new HashSet<>();
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts = new ArrayList<>();
+    @ElementCollection
+    @CollectionTable(name = "MemberPosts", joinColumns = @JoinColumn(name = "member_id"))
+    @Column(name = "post_id")
+    private List<Long> postIds = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "author")
-    private List<Comment> comments = new ArrayList<>();
+    @ElementCollection
+    @CollectionTable(name = "MemberComments", joinColumns = @JoinColumn(name = "member_id"))
+    @Column(name = "comment_id")
+    private List<Long> commentIds = new ArrayList<>();
 
     private int followerCount;
 
     @Builder(toBuilder = true)
     public Member(String username, String password, String email, String nickname,
-        Set<Follow> following, Set<Follow> followers,
-        List<Post> posts, Role role, List<Comment> comments, int followerCount) {
+                  Set<Long> followingIds, Set<Long> followerIds,
+                  List<Long> postIds, Role role, List<Long> commentIds, int followerCount) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.nickname = nickname;
-        this.following = following != null ? following : new HashSet<>();
-        this.followers = followers != null ? followers : new HashSet<>();
-        this.posts = posts != null ? posts : new ArrayList<>();
+        this.followingIds = followingIds != null ? followingIds : new HashSet<>();
+        this.followerIds = followerIds != null ? followerIds : new HashSet<>();
+        this.postIds = postIds != null ? postIds : new ArrayList<>();
         this.role = role;
-        this.comments = comments != null ? comments : new ArrayList<>();
+        this.commentIds = commentIds != null ? commentIds : new ArrayList<>();
         this.followerCount = followerCount;
     }
 

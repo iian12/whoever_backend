@@ -30,7 +30,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
 
-        String token = resolveToken(request);
+        final String token = resolveToken(request);
+        logger.info(token + " call parsing");
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
             Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
@@ -44,13 +45,21 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
         }
 
+        logger.info(response);
+
         filterChain.doFilter(request, response);
     }
 
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
+
+        String value;
+
+        logger.info(bearerToken + " 2");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+            value = bearerToken.substring(7).trim();
+            logger.info(value + ": value");
+            return value;
         }
 
         return null;

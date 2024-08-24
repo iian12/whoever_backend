@@ -6,13 +6,12 @@ import com.jygoh.whoever.domain.post.model.Post;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.HtmlRenderer;
 
 @Getter
 @NoArgsConstructor
@@ -30,19 +29,30 @@ public class PostDetailResponseDto {
     private int commentCount;
 
     @Builder
-    public PostDetailResponseDto(Post post) {
+    public PostDetailResponseDto(Long id, String title, String content, String authorNickname, LocalDateTime createdAt,
+                                 LocalDateTime updatedAt, List<CommentDto> comments, List<HashtagDto> hashtags,
+                                 int viewCount, int commentCount) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.authorNickname = authorNickname;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.comments = comments;
+        this.hashtags = hashtags;
+        this.viewCount = viewCount;
+        this.commentCount = commentCount;
+    }
+
+    public PostDetailResponseDto(Post post, List<CommentDto> commentDtos, List<HashtagDto> hashtagDtos) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.content = convertMarkdownToHtml(post.getContent());
         this.authorNickname = post.getAuthorNickname();
         this.createdAt = post.getCreatedAt();
         this.updatedAt = post.getUpdatedAt();
-        this.comments = post.getComments() != null ?
-                post.getComments().stream().map(CommentDto::new).collect(Collectors.toList()) :
-                new ArrayList<>();
-        this.hashtags = post.getHashtags().stream()
-            .map(HashtagDto::new)
-            .collect(Collectors.toList());
+        this.comments = commentDtos != null ? commentDtos : new ArrayList<>();
+        this.hashtags = hashtagDtos != null ? hashtagDtos : new ArrayList<>();
         this.viewCount = post.getViewCount();
         this.commentCount = post.getCommentCount();
     }

@@ -1,7 +1,5 @@
 package com.jygoh.whoever.domain.member.dto;
 
-import com.jygoh.whoever.domain.comment.model.Comment;
-import com.jygoh.whoever.domain.post.model.Post;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,17 +11,13 @@ import java.util.List;
 public class MemberProfileResponseDto {
 
     private String nickname;
-    private List<MemberProfileResponseDto.PostForProfileDto> posts;
-    private List<MemberProfileResponseDto.CommentForProfileDto> comments;
+    private List<PostForProfileDto> posts;
     private int followerCount;
 
     @Builder
-    public MemberProfileResponseDto(String nickname,
-        List<PostForProfileDto> posts, List<CommentForProfileDto> comments,
-        int followerCount) {
+    public MemberProfileResponseDto(String nickname, List<PostForProfileDto> posts, int followerCount) {
         this.nickname = nickname;
         this.posts = posts;
-        this.comments = comments;
         this.followerCount = followerCount;
     }
 
@@ -33,35 +27,9 @@ public class MemberProfileResponseDto {
         private Long id;
         private String title;
 
-        public PostForProfileDto(Post post) {
-            this.id = post.getId();
-            this.title = post.getTitle();
-        }
-    }
-
-    @Getter
-    @NoArgsConstructor
-    public static class CommentForProfileDto {
-        private Long id;
-        private String content;
-        private MemberProfileResponseDto.CommentForProfileDto.PostForCommentDto post;
-
-        public CommentForProfileDto(Comment comment) {
-            this.id = comment.getId();
-            this.content = comment.getContent();
-            this.post = new MemberProfileResponseDto.CommentForProfileDto.PostForCommentDto(comment.getPost());
-        }
-
-        @Getter
-        @NoArgsConstructor
-        public static class PostForCommentDto {
-            private Long id;
-            private String title;
-
-            public PostForCommentDto(Post post) {
-                this.id = post.getId();
-                this.title = post.getTitle();
-            }
+        public PostForProfileDto(Long id, String title) {
+            this.id = id;
+            this.title = title;
         }
     }
 }

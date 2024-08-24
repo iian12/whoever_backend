@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/member/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/posts").permitAll() // GET 요청만 인증 없이 허용
+                        .requestMatchers(HttpMethod.GET, "/api/v1/posts/**").permitAll() // GET 요청만 인증 없이 허용
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);

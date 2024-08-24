@@ -25,19 +25,18 @@ public class AuthController {
         TokenResponseDto tokenResponseDto = authService.login(requestDto);
 
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", tokenResponseDto.getAccessToken())
-                .httpOnly(true)
                 .secure(true)
                 .path("/")
                 .maxAge(7 * 24 * 60 * 60)
-                .sameSite("Strict")
+                .sameSite("None")
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenResponseDto.getRefreshToken())
-                .httpOnly(true)
                 .secure(true)
+                .httpOnly(true)
                 .path("/")
                 .maxAge(30 * 24 * 60 * 60)
-                .sameSite("Strict")
+                .sameSite("None")
                 .build();
 
         HttpHeaders headers = new HttpHeaders();

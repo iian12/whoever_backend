@@ -1,17 +1,14 @@
 package com.jygoh.whoever.domain.follow.model;
 
-import com.jygoh.whoever.domain.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -21,25 +18,20 @@ public class Follow {
     @EmbeddedId
     private FollowId id;
 
-    @ManyToOne
-    @MapsId("followerId")
-    @JoinColumn(name = "follower_id")
-    private Member follower;
-
-    @ManyToOne
-    @MapsId("followeeId")
-    @JoinColumn(name = "followee_id")
-    private Member followee;
-
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Builder
-    public Follow(Member follower, Member followee, LocalDateTime createdAt) {
-        this.follower = follower;
-        this.followee = followee;
-        this.id = new FollowId(follower.getId(), followee.getId());
-        this.createdAt = LocalDateTime.now();
+    public Follow(Long followerId, Long followeeId, LocalDateTime createdAt) {
+        this.id = new FollowId(followerId, followeeId);
+        this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
     }
 
+    public Long getFollowerId() {
+        return this.id.getFollowerId();
+    }
+
+    public Long getFolloweeId() {
+        return this.id.getFolloweeId();
+    }
 }

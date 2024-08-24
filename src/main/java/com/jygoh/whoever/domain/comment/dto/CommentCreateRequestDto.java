@@ -1,8 +1,6 @@
 package com.jygoh.whoever.domain.comment.dto;
 
 import com.jygoh.whoever.domain.comment.model.Comment;
-import com.jygoh.whoever.domain.member.entity.Member;
-import com.jygoh.whoever.domain.post.model.Post;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,11 +11,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class CommentCreateRequestDto {
 
-    private Long postId;
-    private Long authorId;
-    private String authorNickname;
-    private String content;
-    private Long parentCommentId;
+    private Long postId; // 게시글 ID
+
+    private Long authorId; // 작성자 ID
+
+    private String authorNickname; // 작성자 닉네임
+
+    private String content; // 댓글 내용
+
+    private Long parentCommentId; // 부모 댓글 ID
 
     @Builder
     public CommentCreateRequestDto(Long postId, Long authorId, String authorNickname, String content, Long parentCommentId) {
@@ -28,13 +30,13 @@ public class CommentCreateRequestDto {
         this.parentCommentId = parentCommentId;
     }
 
-    public Comment toEntity(Post post, Member author, String authorNickname, Comment parentComment) {
+    public Comment toEntity() {
         return Comment.builder()
-                .post(post)
-                .author(author)
-                .authorNickname(authorNickname)
+                .postId(this.postId)
+                .authorId(this.authorId)
+                .authorNickname(this.authorNickname)
                 .content(this.content)
-                .parentComment(parentComment)
+                .parentCommentId(this.parentCommentId)
                 .createdAt(LocalDateTime.now())
                 .isUpdated(false)
                 .build();

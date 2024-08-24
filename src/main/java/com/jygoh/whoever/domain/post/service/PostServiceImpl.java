@@ -1,6 +1,10 @@
 package com.jygoh.whoever.domain.post.service;
 
+import com.jygoh.whoever.domain.comment.dto.CommentDto;
+import com.jygoh.whoever.domain.comment.repository.CommentRepository;
+import com.jygoh.whoever.domain.hashtag.dto.HashtagDto;
 import com.jygoh.whoever.domain.hashtag.model.Hashtag;
+import com.jygoh.whoever.domain.hashtag.repository.HashtagRepository;
 import com.jygoh.whoever.domain.hashtag.service.HashtagService;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
@@ -43,13 +47,16 @@ public class PostServiceImpl implements PostService {
     private final MemberRepository memberRepository;
     private final ViewRepository viewRepository;
     private final PostLikeRepository postLikeRepository;
+    private final CommentRepository commentRepository;
+    private final HashtagRepository hashtagRepository;
 
     private final static long VIEW_EXPIRATION_TIME = 60 * 5;
 
     public PostServiceImpl(PostRepository postRepository,
          HashtagService hashtagService, RedisTemplate<String, String> redisTemplate,JwtTokenProvider jwtTokenProvider,
         CustomUserDetailsService customUserDetailsService, MemberRepository memberRepository,
-        ViewRepository viewRepository, PostLikeRepository postLikeRepository) {
+        ViewRepository viewRepository, PostLikeRepository postLikeRepository, CommentRepository commentRepository,
+                           HashtagRepository hashtagRepository) {
         this.postRepository = postRepository;
         this.hashtagService = hashtagService;
         this.redisTemplate = redisTemplate;
@@ -58,24 +65,27 @@ public class PostServiceImpl implements PostService {
         this.memberRepository = memberRepository;
         this.viewRepository = viewRepository;
         this.postLikeRepository = postLikeRepository;
+        this.commentRepository = commentRepository;
+        this.hashtagRepository = hashtagRepository;
     }
 
     @Override
     public Long createPost(PostCreateRequestDto requestDto, String token) {
 
-       Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
 
-       UserDetails userDetails = customUserDetailsService.loadUserById(memberId);
+        UserDetails userDetails = customUserDetailsService.loadUserById(memberId);
+        Member author = ((CustomUserDetails) userDetails).getMember();
+        List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
+        List<Long> hashtagIds = hashtags.stream()
+                .map(Hashtag::getId)
+                .collect(Collectors.toList());
 
-       Member author = ((CustomUserDetails) userDetails).getMember();
+        Post post = requestDto.toEntity(author.getId(), author.getNickname(), hashtagIds);
 
-       List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
+        postRepository.save(post);
 
-       Post post = requestDto.toEntity(author, author.getNickname(), hashtags);
-
-       postRepository.save(post);
-
-       return post.getId();
+        return post.getId();
     }
 
     @Override
@@ -85,9 +95,11 @@ public class PostServiceImpl implements PostService {
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
         List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
+        List<Long> hashtagIds = hashtags.stream()
+                .map(Hashtag::getId)
+                .collect(Collectors.toList());
 
-        // Post 엔티티의 도메인 메서드를 사용하여 업데이트
-        post.updatePost(requestDto.getTitle(), requestDto.getContent(), hashtags);
+        post.updatePost(requestDto.getTitle(), requestDto.getContent(), hashtagIds);
 
         postRepository.save(post);
     }
@@ -120,8 +132,6 @@ public class PostServiceImpl implements PostService {
             try {
                 Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
                 if (memberId != null) {
-                    Member member = memberRepository.findById(memberId)
-                        .orElseThrow(() -> new IllegalArgumentException("Member not found"));
                     userId = memberId.toString(); // Redis에 사용할 userId
                 }
             } catch (IllegalArgumentException e) {
@@ -140,9 +150,10 @@ public class PostServiceImpl implements PostService {
         // 조회한 적이 없다면 조회수를 증가시키고 Redis에 키를 추가
         if (hasViewed == null || !hasViewed) {
             Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                    .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
-            post.incrementViewCount();  // 조회수 증가
+            // 조회수 증가
+            post.incrementViewCount();
             postRepository.save(post);
 
             // Redis에 키를 추가하고 일정 시간 후에 자동으로 만료되도록 설정
@@ -151,20 +162,39 @@ public class PostServiceImpl implements PostService {
             // 사용자 ID가 있다면 View 엔티티 저장
             if (userId != null) {
                 Member member = memberRepository.findById(Long.parseLong(userId))
-                    .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+                        .orElseThrow(() -> new IllegalArgumentException("Member not found"));
                 View view = View.builder()
-                    .member(member)
-                    .post(post)
-                    .build();
+                        .member(member)
+                        .post(post)
+                        .build();
                 viewRepository.save(view);
             }
         }
 
-        // 게시글의 상세 정보를 반환
+        // 포스트, 댓글 및 해시태그 정보를 조회
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
-        return new PostDetailResponseDto(post);
+        List<CommentDto> commentDtos = commentRepository.findByPostId(postId).stream()
+                .map(comment -> new CommentDto(comment, memberRepository))
+                .collect(Collectors.toList());
+
+        List<HashtagDto> hashtagDtos = hashtagRepository.findAllById(post.getHashtagIds()).stream()
+                .map(HashtagDto::new)
+                .collect(Collectors.toList());
+
+        return PostDetailResponseDto.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .authorNickname(post.getAuthorNickname())
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .comments(commentDtos)
+                .hashtags(hashtagDtos)
+                .viewCount(post.getViewCount())
+                .commentCount(post.getCommentCount())
+                .build();
     }
 
     @Override
