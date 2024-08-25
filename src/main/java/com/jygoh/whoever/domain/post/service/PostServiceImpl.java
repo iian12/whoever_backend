@@ -161,13 +161,22 @@ public class PostServiceImpl implements PostService {
 
             // 사용자 ID가 있다면 View 엔티티 저장
             if (userId != null) {
-                Member member = memberRepository.findById(Long.parseLong(userId))
-                        .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-                View view = View.builder()
-                        .member(member)
-                        .post(post)
-                        .build();
-                viewRepository.save(view);
+                Long memberId = Long.parseLong(userId);
+
+                // View 엔티티가 존재하는지 확인
+                View existingView = viewRepository.findByMemberIdAndPostId(memberId, postId);
+
+                if (existingView != null) {
+                    // View 엔티티가 존재하면 업데이트 (updatedAt 필드는 onUpdate에서 자동으로 갱신됨)
+                    viewRepository.save(existingView);
+                } else {
+                    // View 엔티티가 존재하지 않으면 새로 생성
+                    View view = View.builder()
+                            .memberId(memberId)
+                            .postId(postId)
+                            .build();
+                    viewRepository.save(view);
+                }
             }
         }
 

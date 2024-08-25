@@ -7,4 +7,5 @@ public interface ViewRepository extends JpaRepository<View, Long> {
 
     boolean existsByPostIdAndMemberId(Long postId, Long memberId);
 
+    View findByMemberIdAndPostId(Long memberId, Long postId);
 }
