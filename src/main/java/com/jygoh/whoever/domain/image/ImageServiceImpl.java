@@ -1,5 +1,8 @@
 package com.jygoh.whoever.domain.image;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,12 +31,13 @@ public class ImageServiceImpl implements ImageService {
             throw new IllegalArgumentException("Invalid file type. Only JPG, JPEG, PNG, and GIF are allowed.");
         }
 
-        String fileName = UUID.randomUUID().toString() + "-" + originalFilename;
+        String fileName = UUID.randomUUID().toString();
         Path filePath = Paths.get(uploadDir, fileName);
         Files.write(filePath, file.getBytes());
 
         return "http://localhost:8080/images/" + fileName;
     }
+
 
     private boolean isAllowedExtension(String filename) {
         String extension = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();

@@ -6,6 +6,7 @@ import com.jygoh.whoever.domain.hashtag.dto.HashtagDto;
 import com.jygoh.whoever.domain.hashtag.model.Hashtag;
 import com.jygoh.whoever.domain.hashtag.repository.HashtagRepository;
 import com.jygoh.whoever.domain.hashtag.service.HashtagService;
+import com.jygoh.whoever.domain.image.ImageService;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.domain.post.dto.PostCreateRequestDto;
@@ -23,6 +24,12 @@ import com.jygoh.whoever.global.auth.CustomUserDetailsService;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +56,7 @@ public class PostServiceImpl implements PostService {
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
     private final HashtagRepository hashtagRepository;
+    private final ImageService imageService;
 
     private final static long VIEW_EXPIRATION_TIME = 60 * 5;
 
@@ -56,7 +64,7 @@ public class PostServiceImpl implements PostService {
          HashtagService hashtagService, RedisTemplate<String, String> redisTemplate,JwtTokenProvider jwtTokenProvider,
         CustomUserDetailsService customUserDetailsService, MemberRepository memberRepository,
         ViewRepository viewRepository, PostLikeRepository postLikeRepository, CommentRepository commentRepository,
-                           HashtagRepository hashtagRepository) {
+                           HashtagRepository hashtagRepository, ImageService imageService) {
         this.postRepository = postRepository;
         this.hashtagService = hashtagService;
         this.redisTemplate = redisTemplate;
@@ -67,6 +75,25 @@ public class PostServiceImpl implements PostService {
         this.postLikeRepository = postLikeRepository;
         this.commentRepository = commentRepository;
         this.hashtagRepository = hashtagRepository;
+        this.imageService = imageService;
+    }
+
+    private String extractThumbnailUrl(String content) {
+        Parser parser = Parser.builder().build();
+        Node document = parser.parse(content);
+
+        HtmlRenderer renderer = HtmlRenderer.builder().build();
+        String htmlContent = renderer.render(document);
+
+        Document doc = Jsoup.parse(htmlContent);
+        Element imgaElement = doc.select("img").first();
+
+        if (imgaElement != null) {
+            return imgaElement.attr("src");
+        }
+
+        return null;
+
     }
 
     @Override
@@ -81,7 +108,9 @@ public class PostServiceImpl implements PostService {
                 .map(Hashtag::getId)
                 .collect(Collectors.toList());
 
-        Post post = requestDto.toEntity(author.getId(), author.getNickname(), hashtagIds);
+        String thumbnailUrl = extractThumbnailUrl(requestDto.getContent());
+
+        Post post = requestDto.toEntity(author.getId(), author.getNickname(), thumbnailUrl, hashtagIds);
 
         postRepository.save(post);
 
@@ -99,7 +128,9 @@ public class PostServiceImpl implements PostService {
                 .map(Hashtag::getId)
                 .collect(Collectors.toList());
 
-        post.updatePost(requestDto.getTitle(), requestDto.getContent(), hashtagIds);
+        String thumbnailUrl = extractThumbnailUrl(post.getContent());
+
+        post.updatePost(requestDto.getTitle(), requestDto.getContent(), thumbnailUrl, hashtagIds);
 
         postRepository.save(post);
     }

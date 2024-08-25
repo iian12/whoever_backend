@@ -35,6 +35,8 @@ public class Post {
 
     private LocalDateTime updatedAt;
 
+    private String thumbnailUrl;
+
     @ElementCollection
     @CollectionTable(name = "PostHashtags", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "hashtag_id")
@@ -51,13 +53,14 @@ public class Post {
 
     @Builder
     public Post(String title, String content, Long authorId,
-                String authorNickname, LocalDateTime createdAt,
+                String authorNickname, String thumbnailUrl, LocalDateTime createdAt,
                 LocalDateTime updatedAt, List<Long> commentIds,
                 List<Long> hashtagIds, int viewCount, int likeCount) {
         this.title = title;
         this.content = content;
         this.authorId = authorId;
         this.authorNickname = authorNickname;
+        this.thumbnailUrl = thumbnailUrl;
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
         this.commentIds = commentIds != null ? commentIds : new ArrayList<>();
@@ -86,10 +89,11 @@ public class Post {
         this.likeCount--;
     }
 
-    public void updatePost(String title, String content, List<Long> hashtagIds) {
+    public void updatePost(String title, String content, String thumbnailUrl, List<Long> hashtagIds) {
         this.title = title;
         this.content = content;
         this.hashtagIds = hashtagIds;
+        this.thumbnailUrl = thumbnailUrl;
         this.updatedAt = LocalDateTime.now(); // 수정 시간 업데이트
     }
 }
