@@ -1,8 +1,5 @@
 package com.jygoh.whoever.domain.image;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

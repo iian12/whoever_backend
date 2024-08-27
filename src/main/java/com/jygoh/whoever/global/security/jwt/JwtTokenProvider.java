@@ -88,7 +88,6 @@ public class JwtTokenProvider {
 
     public Long getMemberIdFromToken(String token) {
         try {
-            log.info("Parsing: " + token);
 
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)
