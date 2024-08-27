@@ -1,7 +1,5 @@
 package com.jygoh.whoever.domain.post.view.model;
 
-import com.jygoh.whoever.domain.member.entity.Member;
-import com.jygoh.whoever.domain.post.model.Post;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
