@@ -1,6 +1,8 @@
 package com.jygoh.whoever.domain.comment.dto;
 
 import com.jygoh.whoever.domain.comment.model.Comment;
+import com.jygoh.whoever.domain.member.entity.Member;
+import com.jygoh.whoever.domain.post.model.Post;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,11 +32,11 @@ public class CommentCreateRequestDto {
         this.parentCommentId = parentCommentId;
     }
 
-    public Comment toEntity() {
+    public Comment toEntity(Post post, Member author) {
         return Comment.builder()
-                .postId(this.postId)
-                .authorId(this.authorId)
-                .authorNickname(this.authorNickname)
+                .postId(post.getId())
+                .authorId(author.getId())
+                .authorNickname(author.getNickname())
                 .content(this.content)
                 .parentCommentId(this.parentCommentId)
                 .createdAt(LocalDateTime.now())

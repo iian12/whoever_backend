@@ -35,6 +35,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,10 +119,16 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void updatePost(Long postId, PostUpdateRequestDto requestDto) {
+    public Long updatePost(Long postId, PostUpdateRequestDto requestDto, String token) {
+
+        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
 
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        if (!post.getAuthorId().equals(memberId)) {
+            throw new AccessDeniedException("You do not have permission to edit this post.");
+        }
 
         List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
         List<Long> hashtagIds = hashtags.stream()
@@ -133,13 +140,21 @@ public class PostServiceImpl implements PostService {
         post.updatePost(requestDto.getTitle(), requestDto.getContent(), thumbnailUrl, hashtagIds);
 
         postRepository.save(post);
+
+        return post.getId();
     }
 
     @Override
-    public void deletePost(Long postId) {
+    public void deletePost(Long postId, String token) {
+
+        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
 
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        if (!post.getAuthorId().equals(memberId)) {
+            throw new AccessDeniedException("You do not have permission to edit this post.");
+        }
 
         postRepository.delete(post);
     }
