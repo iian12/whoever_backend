@@ -9,11 +9,15 @@ public class TokenUtils {
     }
 
     public static String extractTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+        String token = request.getHeader("Authorization");
+
+        // "Bearer " 접두사가 있는 경우 제거
+        if (token != null && token.startsWith("Bearer ")) {
+            return token.substring(7);
         }
-        throw new IllegalArgumentException("Invalid or missing Authorization header");
+
+        // 토큰이 없는 경우 null 반환
+        return null;
     }
 
 }

@@ -8,9 +8,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 @Transactional
 public class MemberServiceImpl implements MemberService {
@@ -18,13 +15,19 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final MemberProfileResponseDtoFactory memberProfileResponseDtoFactory;
+    private final MyProfileResponseDtoFactory myProfileResponseDtoFactory;
 
     public MemberServiceImpl(MemberRepository memberRepository,
-        BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
+                             BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider,
+                             MemberProfileResponseDtoFactory memberProfileResponseDtoFactory,
+                             MyProfileResponseDtoFactory myProfileResponseDtoFactory) {
 
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.memberProfileResponseDtoFactory = memberProfileResponseDtoFactory;
+        this.myProfileResponseDtoFactory = myProfileResponseDtoFactory;
     }
 
     @Override
@@ -71,9 +74,9 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberProfileResponseDto getMemberProfileByNickname(String nickname) {
         Member member = memberRepository.findByNickname(nickname)
-            .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
-        return MemberProfileResponseDtoFactory.createFromMember(member);
+        return memberProfileResponseDtoFactory.createFromMember(member);
     }
 
     @Override
@@ -81,6 +84,6 @@ public class MemberServiceImpl implements MemberService {
         Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-        return MyProfileResponseDtoFactory.createFromMember(member);
+        return myProfileResponseDtoFactory.createFromMember(member);
     }
 }

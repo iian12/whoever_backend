@@ -14,6 +14,7 @@ public class PostListResponseDto {
     private Long id;
     private String title;
     private String authorNickname;
+    private String thumbnailUrl;
     private LocalDateTime createdAt;
 
     @Builder
@@ -21,6 +22,7 @@ public class PostListResponseDto {
         this.id = post.getId();
         this.title = post.getTitle();
         this.authorNickname = post.getAuthorNickname();
+        this.thumbnailUrl = post.getThumbnailUrl();
         this.createdAt = post.getCreatedAt();
     }
 }

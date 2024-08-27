@@ -1,23 +1,14 @@
 package com.jygoh.whoever.domain.comment.model;
 
-import com.jygoh.whoever.domain.member.entity.Member;
-import com.jygoh.whoever.domain.post.model.Post;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -28,38 +19,37 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+    @Column(nullable = false)
+    private Long postId;
 
-    @ManyToOne
-    @JoinColumn(name = "author_id", nullable = false)
-    private Member author;
+    @Column(nullable = false)
+    private Long authorId;
 
     private String authorNickname;
 
     @Lob
     private String content;
 
-    @ManyToOne
-    @JoinColumn(name = "parent_comment_id")
-    private Comment parentComment;
+    @Column
+    private Long parentCommentId; // 부모 댓글 ID
 
-    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL)
-    private List<Comment> replies = new ArrayList<>();
+    @ElementCollection
+    @CollectionTable(name = "CommentReplies", joinColumns = @JoinColumn(name = "comment_id"))
+    @Column(name = "reply_id")
+    private List<Long> replyIds = new ArrayList<>();
 
     private LocalDateTime createdAt;
 
     private Boolean isUpdated;
 
     @Builder
-    public Comment(Post post, Member author, String authorNickname, String content, Comment parentComment, List<Comment> replies, LocalDateTime createdAt, Boolean isUpdated) {
-        this.post = post;
-        this.author = author;
+    public Comment(Long postId, Long authorId, String authorNickname, String content, Long parentCommentId, List<Long> replyIds, LocalDateTime createdAt, Boolean isUpdated) {
+        this.postId = postId;
+        this.authorId = authorId;
         this.authorNickname = authorNickname;
         this.content = content;
-        this.parentComment = parentComment;
-        this.replies = replies != null ? replies : new ArrayList<>();
+        this.parentCommentId = parentCommentId;
+        this.replyIds = replyIds != null ? replyIds : new ArrayList<>();
         this.createdAt = createdAt;
         this.isUpdated = isUpdated;
     }

@@ -1,15 +1,13 @@
 package com.jygoh.whoever.domain.follow.service;
 
-import com.jygoh.whoever.domain.follow.Follow;
-import com.jygoh.whoever.domain.follow.FollowRepository;
-import com.jygoh.whoever.domain.follow.FollowResponseDto;
+import com.jygoh.whoever.domain.follow.model.Follow;
+import com.jygoh.whoever.domain.follow.repository.FollowRepository;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,47 +30,30 @@ public class FollowServiceImpl implements FollowService {
     public void toggleFollow(String token, Long followeeId) {
 
         Long followerId = jwtTokenProvider.getMemberIdFromToken(token);
-        Member follower = memberRepository.findById(followerId).orElseThrow();
-        Member followee = memberRepository.findById(followeeId).orElseThrow();
 
-        if (follower.equals(followee)) {
+        // Validate that a user cannot follow themselves
+        if (followerId.equals(followeeId)) {
             throw new IllegalArgumentException("A user cannot follow themselves.");
         }
 
-        Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowee(follower, followee);
+        // Check if the follow relationship already exists
+        Optional<Follow> existingFollow = followRepository.findById_FollowerIdAndId_FolloweeId(followerId, followeeId);
+
         if (existingFollow.isPresent()) {
-
+            // If follow relationship exists, delete it and decrease follower count
             followRepository.delete(existingFollow.get());
-            followee.decreaseFollowerCount();
+            // Assuming `followeeId` refers to the followee's member ID
+            memberRepository.findById(followeeId).ifPresent(Member::decreaseFollowerCount);
         } else {
-
+            // If follow relationship does not exist, create it and increase follower count
             Follow follow = Follow.builder()
-                .follower(follower)
-                .followee(followee)
-                .createdAt(LocalDateTime.now())
-                .build();
+                    .followerId(followerId)
+                    .followeeId(followeeId)
+                    .createdAt(LocalDateTime.now())
+                    .build();
             followRepository.save(follow);
-            followee.increaseFollowerCount();
+            memberRepository.findById(followeeId).ifPresent(Member::increaseFollowerCount);
         }
     }
 
-    @Override
-    public List<FollowResponseDto> getFollowing(String token) {
-
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-        Member member = memberRepository.findById(memberId).orElseThrow();
-
-        return member.getFollowing().stream()
-            .map(follow -> new FollowResponseDto(follow.getFollowee()))
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public int getFollowerCount(Long memberId) {
-
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-
-        return member.getFollowers().size();
-    }
 }

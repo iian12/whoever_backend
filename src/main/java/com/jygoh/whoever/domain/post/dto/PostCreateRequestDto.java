@@ -1,22 +1,19 @@
 package com.jygoh.whoever.domain.post.dto;
 
-import com.jygoh.whoever.domain.hashtag.model.Hashtag;
-import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.post.model.Post;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
 public class PostCreateRequestDto {
 
     private String title;
-
     private String content;
-
     private List<String> hashtagNames;
 
     @Builder
@@ -26,15 +23,16 @@ public class PostCreateRequestDto {
         this.hashtagNames = hashtagNames;
     }
 
-    public Post toEntity(Member author, String authorNickname, List<Hashtag> hashtags) {
+    public Post toEntity(Long authorId, String authorNickname, String thumbnailUrl, List<Long> hashtagIds) {
         return Post.builder()
                 .title(this.title)
                 .content(this.content)
-                .author(author)
+                .authorId(authorId)
                 .authorNickname(authorNickname)
+                .thumbnailUrl(thumbnailUrl)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .hashtags(hashtags)
+                .hashtagIds(hashtagIds)
                 .build();
     }
 }

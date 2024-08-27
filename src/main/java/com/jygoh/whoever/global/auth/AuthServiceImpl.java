@@ -72,15 +72,10 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String newAccessToken = jwtTokenProvider.createAccessToken(memberId);
-        String newRefreshToken = jwtTokenProvider.createRefreshToken(memberId);
-
-        RefreshToken updatedRefreshToken = existingRefreshToken.updateToken(newRefreshToken);
-        refreshTokenRepository.save(updatedRefreshToken);
 
         // TokenResponseDto 객체 생성
         return TokenResponseDto.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken)
                 .build();
     }
 }

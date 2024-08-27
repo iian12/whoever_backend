@@ -7,7 +7,6 @@ import com.jygoh.whoever.domain.member.otp.model.OTP;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +30,10 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     @Override
     public void sendOtp(SendOtpRequestDto requestDto) {
 
+        String username = requestDto.getUsername();
         String email = requestDto.getEmail();
 
-        Member member = memberRepository.findByEmail(email)
+        Member member = memberRepository.findByUsernameAndEmail(username, email)
             .orElseThrow(() -> new IllegalArgumentException("Member not found."));
 
         String otpCode = generateOtpCode();
@@ -70,7 +70,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         Member member = memberRepository.findByEmail(requestDto.getEmail())
             .orElseThrow(() -> new IllegalArgumentException("Member not found."));
 
-        member.updatePassword(bcryptPasswordEncoder.encode(requestDto.getPassword()));
+        member.updatePassword(bcryptPasswordEncoder.encode(requestDto.getNewPassword()));
         memberRepository.save(member);
     }
 

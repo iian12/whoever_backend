@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 public class PasswordResetRequestDto {
 
     private String email;
-    private String password;
+    private String newPassword;
 }

@@ -1,29 +1,34 @@
 package com.jygoh.whoever.domain.member.dto;
 
-import com.jygoh.whoever.domain.member.dto.MemberProfileResponseDto.PostForProfileDto;
 import com.jygoh.whoever.domain.member.entity.Member;
+import com.jygoh.whoever.domain.post.repository.PostRepository;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
 public class MemberProfileResponseDtoFactory {
 
-    public static MemberProfileResponseDto createFromMember(Member member) {
-        List<PostForProfileDto> posts = member.getPosts().stream()
-            .map(MemberProfileResponseDto.PostForProfileDto::new)
-            .collect(Collectors.toList());
+    private final PostRepository postRepository;
 
-        List<MemberProfileResponseDto.CommentForProfileDto> comments = member.getComments().stream()
-            .map(MemberProfileResponseDto.CommentForProfileDto::new)
-            .collect(Collectors.toList());
-
-        int followerCount = member.getFollowers().size();
-
-        return MemberProfileResponseDto.builder()
-            .nickname(member.getNickname())
-            .posts(posts)
-            .comments(comments)
-            .followerCount(followerCount)
-            .build();
+    public MemberProfileResponseDtoFactory(PostRepository postRepository) {
+        this.postRepository = postRepository;
     }
 
+    public MemberProfileResponseDto createFromMember(Member member) {
+        // 작성한 글의 제목을 조회
+        List<MemberProfileResponseDto.PostForProfileDto> posts = postRepository.findAllByAuthorId(member.getId())
+                .stream()
+                .map(post -> new MemberProfileResponseDto.PostForProfileDto(post.getId(), post.getTitle()))
+                .collect(Collectors.toList());
+
+        int followerCount = member.getFollowerCount();
+
+        return MemberProfileResponseDto.builder()
+                .nickname(member.getNickname())
+                .posts(posts)
+                .followerCount(followerCount)
+                .build();
+    }
 }

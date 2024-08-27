@@ -6,6 +6,8 @@ import com.jygoh.whoever.domain.post.dto.PostListResponseDto;
 import com.jygoh.whoever.domain.post.service.PostService;
 import com.jygoh.whoever.global.security.jwt.TokenUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import java.util.List;
 @RequestMapping("/api/v1/posts")
 public class PostController {
 
+    private static final Logger log = LoggerFactory.getLogger(PostController.class);
     private final PostService postService;
 
     public PostController(PostService postService) {
@@ -23,8 +26,16 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<Long> createPost(@RequestBody PostCreateRequestDto requestDto, HttpServletRequest request) {
+    public ResponseEntity<?> createPost(@RequestBody PostCreateRequestDto requestDto, HttpServletRequest request) {
+
         String token = TokenUtils.extractTokenFromRequest(request);
+
+        if (requestDto.getTitle() == null || requestDto.getTitle().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Title cannot be empty.");
+        }
+        if (requestDto.getContent() == null || requestDto.getContent().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Content cannot be empty.");
+        }
 
         Long postId = postService.createPost(requestDto, token);
 
@@ -39,20 +50,22 @@ public class PostController {
 
     @GetMapping("/{postId}")
     public ResponseEntity<PostDetailResponseDto> getPost(
-        @PathVariable Long postId,
-        @RequestHeader(value = "Authorization", required = false) String token) {
+        @PathVariable Long postId, HttpServletRequest request) {
         try {
+            String token = TokenUtils.extractTokenFromRequest(request);
+            log.info(token);
             PostDetailResponseDto postDetails = postService.getPostDetail(postId, token);
             return ResponseEntity.ok(postDetails);
         } catch (Exception e) {
-            // 로그를 남기거나 사용자에게 적절한 오류 메시지를 반환
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
     @PostMapping("/{postId}/like")
     public ResponseEntity<Void> toggleLike(
-        @PathVariable Long postId, @RequestHeader("Authorization") String token) {
+        @PathVariable Long postId, HttpServletRequest request) {
+        String token = TokenUtils.extractTokenFromRequest(request);
+
         postService.toggleLike(postId, token);
         return ResponseEntity.ok().build();
     }

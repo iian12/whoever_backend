@@ -11,9 +11,9 @@ public interface PostService {
 
     Long createPost(PostCreateRequestDto requestDto, String token);
 
-    void updatePost(Long postId, PostUpdateRequestDto requestDto);
+    Long updatePost(Long postId, PostUpdateRequestDto requestDto, String token);
 
-    void deletePost(Long postId);
+    void deletePost(Long postId, String token);
 
     List<PostListResponseDto> getAllPosts(int page, int size);
 

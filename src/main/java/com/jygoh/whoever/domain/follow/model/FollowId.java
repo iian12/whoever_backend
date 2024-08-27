@@ -1,12 +1,15 @@
-package com.jygoh.whoever.domain.follow;
+package com.jygoh.whoever.domain.follow.model;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
+
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 
 @Embeddable
+@Getter
 @NoArgsConstructor
 public class FollowId implements Serializable {
 
