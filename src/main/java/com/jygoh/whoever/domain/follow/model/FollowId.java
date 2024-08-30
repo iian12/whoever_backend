@@ -3,7 +3,6 @@ package com.jygoh.whoever.domain.follow.model;
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,11 +22,15 @@ public class FollowId implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         FollowId followId = (FollowId) o;
-        return Objects.equals(followerId, followId.followerId) &&
-            Objects.equals(followeeId, followId.followeeId);
+        return Objects.equals(followerId, followId.followerId) && Objects.equals(followeeId,
+            followId.followeeId);
     }
 
     @Override

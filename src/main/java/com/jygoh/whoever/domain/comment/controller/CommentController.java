@@ -23,11 +23,10 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<Long> createComment(@RequestBody CommentCreateRequestDto requestDto,
         HttpServletRequest request) {
-
         String token = TokenUtils.extractTokenFromRequest(request);
-
         Long commentId = commentService.createComment(requestDto, token);
-
         return ResponseEntity.ok(commentId);
     }
+
+
 }

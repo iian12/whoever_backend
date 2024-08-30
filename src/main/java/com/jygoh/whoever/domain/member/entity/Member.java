@@ -1,15 +1,23 @@
 package com.jygoh.whoever.domain.member.entity;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -27,6 +35,8 @@ public class Member {
     private String email;
 
     private String nickname;
+
+    private String profileImageUrl;
 
     @ElementCollection
     @CollectionTable(name = "MemberFollowing", joinColumns = @JoinColumn(name = "member_id"))
@@ -55,12 +65,13 @@ public class Member {
 
     @Builder(toBuilder = true)
     public Member(String username, String password, String email, String nickname,
-                  Set<Long> followingIds, Set<Long> followerIds,
-                  List<Long> postIds, Role role, List<Long> commentIds, int followerCount) {
+        String profileImageUrl, Set<Long> followingIds, Set<Long> followerIds, List<Long> postIds,
+        Role role, List<Long> commentIds, int followerCount) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.nickname = nickname;
+        this.profileImageUrl = profileImageUrl;
         this.followingIds = followingIds != null ? followingIds : new HashSet<>();
         this.followerIds = followerIds != null ? followerIds : new HashSet<>();
         this.postIds = postIds != null ? postIds : new ArrayList<>();
@@ -69,12 +80,13 @@ public class Member {
         this.followerCount = followerCount;
     }
 
-    public void updateProfile(String username, String email,
-                                String nickname, String encodedPassword) {
+    public void updateProfile(String username, String email, String nickname,
+        String encodedPassword, String profileImageUrl) {
         this.username = username;
         this.email = email;
         this.nickname = nickname;
         this.password = encodedPassword;
+        this.profileImageUrl = profileImageUrl;
     }
 
     public void updatePassword(String encodedPassword) {

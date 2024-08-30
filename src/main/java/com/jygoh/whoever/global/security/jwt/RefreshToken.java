@@ -29,9 +29,6 @@ public class RefreshToken {
     }
 
     public RefreshToken updateToken(String newToken) {
-        return RefreshToken.builder()
-                .memberId(this.memberId)
-                .token(newToken)
-                .build();
+        return RefreshToken.builder().memberId(this.memberId).token(newToken).build();
     }
 }

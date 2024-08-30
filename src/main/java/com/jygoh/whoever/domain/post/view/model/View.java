@@ -1,7 +1,12 @@
 package com.jygoh.whoever.domain.post.view.model;
 
-import jakarta.persistence.*;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -29,6 +34,12 @@ public class View {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Builder
+    public View(Long memberId, Long postId) {
+        this.memberId = memberId;
+        this.postId = postId;
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -37,11 +48,5 @@ public class View {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
-    }
-
-    @Builder
-    public View(Long memberId, Long postId) {
-        this.memberId = memberId;
-        this.postId = postId;
     }
 }

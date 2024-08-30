@@ -2,7 +2,6 @@ package com.jygoh.whoever.domain.post.dto;
 
 import com.jygoh.whoever.domain.post.model.Post;
 import java.time.LocalDateTime;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

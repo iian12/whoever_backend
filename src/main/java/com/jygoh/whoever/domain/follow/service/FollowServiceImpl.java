@@ -7,7 +7,6 @@ import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.time.LocalDateTime;
 import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,17 +27,14 @@ public class FollowServiceImpl implements FollowService {
 
     @Override
     public void toggleFollow(String token, Long followeeId) {
-
         Long followerId = jwtTokenProvider.getMemberIdFromToken(token);
-
         // Validate that a user cannot follow themselves
         if (followerId.equals(followeeId)) {
             throw new IllegalArgumentException("A user cannot follow themselves.");
         }
-
         // Check if the follow relationship already exists
-        Optional<Follow> existingFollow = followRepository.findById_FollowerIdAndId_FolloweeId(followerId, followeeId);
-
+        Optional<Follow> existingFollow = followRepository.findById_FollowerIdAndId_FolloweeId(
+            followerId, followeeId);
         if (existingFollow.isPresent()) {
             // If follow relationship exists, delete it and decrease follower count
             followRepository.delete(existingFollow.get());
@@ -46,11 +42,8 @@ public class FollowServiceImpl implements FollowService {
             memberRepository.findById(followeeId).ifPresent(Member::decreaseFollowerCount);
         } else {
             // If follow relationship does not exist, create it and increase follower count
-            Follow follow = Follow.builder()
-                    .followerId(followerId)
-                    .followeeId(followeeId)
-                    .createdAt(LocalDateTime.now())
-                    .build();
+            Follow follow = Follow.builder().followerId(followerId).followeeId(followeeId)
+                .createdAt(LocalDateTime.now()).build();
             followRepository.save(follow);
             memberRepository.findById(followeeId).ifPresent(Member::increaseFollowerCount);
         }

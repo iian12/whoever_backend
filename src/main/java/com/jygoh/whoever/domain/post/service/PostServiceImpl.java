@@ -22,8 +22,10 @@ import com.jygoh.whoever.domain.post.view.repository.ViewRepository;
 import com.jygoh.whoever.global.auth.CustomUserDetails;
 import com.jygoh.whoever.global.auth.CustomUserDetailsService;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -40,13 +42,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 @Transactional
 public class PostServiceImpl implements PostService {
 
+    private final static long VIEW_EXPIRATION_TIME = 60 * 5;
     private final PostRepository postRepository;
     private final HashtagService hashtagService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -59,13 +59,12 @@ public class PostServiceImpl implements PostService {
     private final HashtagRepository hashtagRepository;
     private final ImageService imageService;
 
-    private final static long VIEW_EXPIRATION_TIME = 60 * 5;
-
-    public PostServiceImpl(PostRepository postRepository,
-         HashtagService hashtagService, RedisTemplate<String, String> redisTemplate,JwtTokenProvider jwtTokenProvider,
+    public PostServiceImpl(PostRepository postRepository, HashtagService hashtagService,
+        RedisTemplate<String, String> redisTemplate, JwtTokenProvider jwtTokenProvider,
         CustomUserDetailsService customUserDetailsService, MemberRepository memberRepository,
-        ViewRepository viewRepository, PostLikeRepository postLikeRepository, CommentRepository commentRepository,
-                           HashtagRepository hashtagRepository, ImageService imageService) {
+        ViewRepository viewRepository, PostLikeRepository postLikeRepository,
+        CommentRepository commentRepository, HashtagRepository hashtagRepository,
+        ImageService imageService) {
         this.postRepository = postRepository;
         this.hashtagService = hashtagService;
         this.redisTemplate = redisTemplate;
@@ -82,80 +81,54 @@ public class PostServiceImpl implements PostService {
     private String extractThumbnailUrl(String content) {
         Parser parser = Parser.builder().build();
         Node document = parser.parse(content);
-
         HtmlRenderer renderer = HtmlRenderer.builder().build();
         String htmlContent = renderer.render(document);
-
         Document doc = Jsoup.parse(htmlContent);
         Element imgaElement = doc.select("img").first();
-
         if (imgaElement != null) {
             return imgaElement.attr("src");
         }
-
         return null;
-
     }
 
     @Override
     public Long createPost(PostCreateRequestDto requestDto, String token) {
-
         Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-
         UserDetails userDetails = customUserDetailsService.loadUserById(memberId);
         Member author = ((CustomUserDetails) userDetails).getMember();
         List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
-        List<Long> hashtagIds = hashtags.stream()
-                .map(Hashtag::getId)
-                .collect(Collectors.toList());
-
+        List<Long> hashtagIds = hashtags.stream().map(Hashtag::getId).collect(Collectors.toList());
         String thumbnailUrl = extractThumbnailUrl(requestDto.getContent());
-
-        Post post = requestDto.toEntity(author.getId(), author.getNickname(), thumbnailUrl, hashtagIds);
-
+        Post post = requestDto.toEntity(author.getId(), author.getNickname(), thumbnailUrl,
+            hashtagIds);
         postRepository.save(post);
-
         return post.getId();
     }
 
     @Override
     public Long updatePost(Long postId, PostUpdateRequestDto requestDto, String token) {
-
         Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-
         if (!post.getAuthorId().equals(memberId)) {
             throw new AccessDeniedException("You do not have permission to edit this post.");
         }
-
         List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
-        List<Long> hashtagIds = hashtags.stream()
-                .map(Hashtag::getId)
-                .collect(Collectors.toList());
-
+        List<Long> hashtagIds = hashtags.stream().map(Hashtag::getId).collect(Collectors.toList());
         String thumbnailUrl = extractThumbnailUrl(post.getContent());
-
         post.updatePost(requestDto.getTitle(), requestDto.getContent(), thumbnailUrl, hashtagIds);
-
         postRepository.save(post);
-
         return post.getId();
     }
 
     @Override
     public void deletePost(Long postId, String token) {
-
         Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-
         if (!post.getAuthorId().equals(memberId)) {
             throw new AccessDeniedException("You do not have permission to edit this post.");
         }
-
         postRepository.delete(post);
     }
 
@@ -163,105 +136,69 @@ public class PostServiceImpl implements PostService {
     public List<PostListResponseDto> getAllPosts(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
         Page<Post> postPage = postRepository.findAll(pageable);
-
-        return postPage.stream()
-                .map(PostListResponseDto::new)
-                .collect(Collectors.toList());
+        return postPage.stream().map(PostListResponseDto::new).collect(Collectors.toList());
     }
 
     @Override
     public PostDetailResponseDto getPostDetail(Long postId, String token) {
         String redisKey = "postView:" + postId;
-
+        // 사용자 ID를 가져오는 로직을 간소화
         String userId = null;
         if (token != null && !token.isEmpty()) {
             try {
                 Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-                if (memberId != null) {
-                    userId = memberId.toString(); // Redis에 사용할 userId
-                }
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Error processing token: " + e.getMessage(), e);
+                userId = (memberId != null) ? memberId.toString() : null;
             } catch (Exception e) {
-                throw new RuntimeException("An unexpected error occurred: " + e.getMessage(), e);
+                throw new RuntimeException("Error processing token: " + e.getMessage(), e);
             }
         }
-
-        // Redis에서 조회 여부 확인
+        // Redis 키에 사용자 ID 추가
         if (userId != null) {
             redisKey += ":" + userId;
         }
+        // Redis에서 조회 여부 확인
         Boolean hasViewed = redisTemplate.hasKey(redisKey);
-
         // 조회한 적이 없다면 조회수를 증가시키고 Redis에 키를 추가
-        if (hasViewed == null || !hasViewed) {
+        if (Boolean.FALSE.equals(hasViewed)) {
             Post post = postRepository.findById(postId)
-                    .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
             // 조회수 증가
             post.incrementViewCount();
             postRepository.save(post);
-
             // Redis에 키를 추가하고 일정 시간 후에 자동으로 만료되도록 설정
-            redisTemplate.opsForValue().set(redisKey, "true", VIEW_EXPIRATION_TIME, TimeUnit.SECONDS);
-
-            // 사용자 ID가 있다면 View 엔티티 저장
+            redisTemplate.opsForValue()
+                .set(redisKey, "true", VIEW_EXPIRATION_TIME, TimeUnit.SECONDS);
+            // 사용자 ID가 있는 경우 View 엔티티 처리
             if (userId != null) {
                 Long memberId = Long.parseLong(userId);
-
-                // View 엔티티가 존재하는지 확인
-                View existingView = viewRepository.findByMemberIdAndPostId(memberId, postId);
-
-                if (existingView != null) {
-                    // View 엔티티가 존재하면 업데이트 (updatedAt 필드는 onUpdate에서 자동으로 갱신됨)
-                    viewRepository.save(existingView);
-                } else {
-                    // View 엔티티가 존재하지 않으면 새로 생성
-                    View view = View.builder()
-                            .memberId(memberId)
-                            .postId(postId)
-                            .build();
-                    viewRepository.save(view);
-                }
+                // View 엔티티가 존재하는지 확인하고 필요 시 생성
+                viewRepository.findByMemberIdAndPostId(memberId, postId).orElseGet(() -> {
+                    View view = View.builder().memberId(memberId).postId(postId).build();
+                    return viewRepository.save(view);
+                });
             }
         }
-
         // 포스트, 댓글 및 해시태그 정보를 조회
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-
+            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         List<CommentDto> commentDtos = commentRepository.findByPostId(postId).stream()
-                .map(comment -> new CommentDto(comment, memberRepository))
-                .collect(Collectors.toList());
-
+            .map(comment -> new CommentDto(comment, memberRepository)).collect(Collectors.toList());
         List<HashtagDto> hashtagDtos = hashtagRepository.findAllById(post.getHashtagIds()).stream()
-                .map(HashtagDto::new)
-                .collect(Collectors.toList());
-
-        return PostDetailResponseDto.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .authorNickname(post.getAuthorNickname())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .comments(commentDtos)
-                .hashtags(hashtagDtos)
-                .viewCount(post.getViewCount())
-                .commentCount(post.getCommentCount())
-                .build();
+            .map(HashtagDto::new).collect(Collectors.toList());
+        return PostDetailResponseDto.builder().id(post.getId()).title(post.getTitle())
+            .content(post.getContent()).authorNickname(post.getAuthorNickname())
+            .createdAt(post.getCreatedAt()).updatedAt(post.getUpdatedAt()).comments(commentDtos)
+            .hashtags(hashtagDtos).viewCount(post.getViewCount())
+            .commentCount(post.getCommentCount()).build();
     }
 
     @Override
     public void toggleLike(Long postId, String token) {
-
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-
         Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-
-        Optional<PostLike> existingLike = postLikeRepository.findByPostIdAndMemberId(postId, memberId);
-
+        Optional<PostLike> existingLike = postLikeRepository.findByPostIdAndMemberId(postId,
+            memberId);
         if (existingLike.isPresent()) {
             // User has already liked the post, so remove the like
             post.decrementLikeCount();
@@ -271,11 +208,7 @@ public class PostServiceImpl implements PostService {
             // User has not liked the post, so add a new like
             post.incrementLikeCount();
             postRepository.save(post);
-
-            PostLike postLike = PostLike.builder()
-                .postId(postId)
-                .memberId(memberId)
-                .build();
+            PostLike postLike = PostLike.builder().postId(postId).memberId(memberId).build();
             postLikeRepository.save(postLike);
         }
     }

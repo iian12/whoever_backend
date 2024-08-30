@@ -3,15 +3,14 @@ package com.jygoh.whoever.domain.post.dto;
 import com.jygoh.whoever.domain.comment.dto.CommentDto;
 import com.jygoh.whoever.domain.hashtag.dto.HashtagDto;
 import com.jygoh.whoever.domain.post.model.Post;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -29,9 +28,9 @@ public class PostDetailResponseDto {
     private int commentCount;
 
     @Builder
-    public PostDetailResponseDto(Long id, String title, String content, String authorNickname, LocalDateTime createdAt,
-                                 LocalDateTime updatedAt, List<CommentDto> comments, List<HashtagDto> hashtags,
-                                 int viewCount, int commentCount) {
+    public PostDetailResponseDto(Long id, String title, String content, String authorNickname,
+        LocalDateTime createdAt, LocalDateTime updatedAt, List<CommentDto> comments,
+        List<HashtagDto> hashtags, int viewCount, int commentCount) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -44,7 +43,8 @@ public class PostDetailResponseDto {
         this.commentCount = commentCount;
     }
 
-    public PostDetailResponseDto(Post post, List<CommentDto> commentDtos, List<HashtagDto> hashtagDtos) {
+    public PostDetailResponseDto(Post post, List<CommentDto> commentDtos,
+        List<HashtagDto> hashtagDtos) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.content = convertMarkdownToHtml(post.getContent());
@@ -59,9 +59,7 @@ public class PostDetailResponseDto {
 
     private String convertMarkdownToHtml(String markdownContent) {
         Parser parser = Parser.builder().build();
-
         HtmlRenderer renderer = HtmlRenderer.builder().build();
-
         return renderer.render(parser.parse(markdownContent));
     }
 }

@@ -2,10 +2,9 @@ package com.jygoh.whoever.domain.member.dto;
 
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.post.repository.PostRepository;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
 
 @Component
 public class MemberProfileResponseDtoFactory {
@@ -18,17 +17,13 @@ public class MemberProfileResponseDtoFactory {
 
     public MemberProfileResponseDto createFromMember(Member member) {
         // 작성한 글의 제목을 조회
-        List<MemberProfileResponseDto.PostForProfileDto> posts = postRepository.findAllByAuthorId(member.getId())
-                .stream()
-                .map(post -> new MemberProfileResponseDto.PostForProfileDto(post.getId(), post.getTitle()))
-                .collect(Collectors.toList());
-
+        List<MemberProfileResponseDto.PostForProfileDto> posts = postRepository.findAllByAuthorId(
+                member.getId()).stream().map(
+                post -> new MemberProfileResponseDto.PostForProfileDto(post.getId(),
+                    post.getTitle()))
+            .collect(Collectors.toList());
         int followerCount = member.getFollowerCount();
-
-        return MemberProfileResponseDto.builder()
-                .nickname(member.getNickname())
-                .posts(posts)
-                .followerCount(followerCount)
-                .build();
+        return MemberProfileResponseDto.builder().nickname(member.getNickname()).posts(posts)
+            .followerCount(followerCount).build();
     }
 }
