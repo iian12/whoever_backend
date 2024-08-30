@@ -3,11 +3,10 @@ package com.jygoh.whoever.domain.comment.dto;
 import com.jygoh.whoever.domain.comment.model.Comment;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.post.model.Post;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
@@ -24,7 +23,8 @@ public class CommentCreateRequestDto {
     private Long parentCommentId; // 부모 댓글 ID
 
     @Builder
-    public CommentCreateRequestDto(Long postId, Long authorId, String authorNickname, String content, Long parentCommentId) {
+    public CommentCreateRequestDto(Long postId, Long authorId, String authorNickname,
+        String content, Long parentCommentId) {
         this.postId = postId;
         this.authorId = authorId;
         this.authorNickname = authorNickname;
@@ -33,14 +33,9 @@ public class CommentCreateRequestDto {
     }
 
     public Comment toEntity(Post post, Member author) {
-        return Comment.builder()
-                .postId(post.getId())
-                .authorId(author.getId())
-                .authorNickname(author.getNickname())
-                .content(this.content)
-                .parentCommentId(this.parentCommentId)
-                .createdAt(LocalDateTime.now())
-                .isUpdated(false)
-                .build();
+        return Comment.builder().postId(post.getId()).authorId(author.getId())
+            .authorNickname(author.getNickname()).content(this.content)
+            .parentCommentId(this.parentCommentId).createdAt(LocalDateTime.now()).isUpdated(false)
+            .build();
     }
 }

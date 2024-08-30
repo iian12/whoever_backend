@@ -1,6 +1,11 @@
 package com.jygoh.whoever.domain.member.service;
 
-import com.jygoh.whoever.domain.member.dto.*;
+import com.jygoh.whoever.domain.member.dto.MemberCreateRequestDto;
+import com.jygoh.whoever.domain.member.dto.MemberProfileResponseDto;
+import com.jygoh.whoever.domain.member.dto.MemberProfileResponseDtoFactory;
+import com.jygoh.whoever.domain.member.dto.MemberUpdateRequestDto;
+import com.jygoh.whoever.domain.member.dto.MyProfileResponseDto;
+import com.jygoh.whoever.domain.member.dto.MyProfileResponseDtoFactory;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
@@ -19,10 +24,9 @@ public class MemberServiceImpl implements MemberService {
     private final MyProfileResponseDtoFactory myProfileResponseDtoFactory;
 
     public MemberServiceImpl(MemberRepository memberRepository,
-                             BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider,
-                             MemberProfileResponseDtoFactory memberProfileResponseDtoFactory,
-                             MyProfileResponseDtoFactory myProfileResponseDtoFactory) {
-
+        BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider,
+        MemberProfileResponseDtoFactory memberProfileResponseDtoFactory,
+        MyProfileResponseDtoFactory myProfileResponseDtoFactory) {
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -32,20 +36,14 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Long register(MemberCreateRequestDto requestDto) {
-
         if (memberRepository.existsByUsername(requestDto.getUsername())) {
             throw new IllegalArgumentException("이미 사용 중인 사용자 이름입니다.");
         }
-
         if (memberRepository.existsByEmail(requestDto.getEmail())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
-
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
-
-        Member member = requestDto.toEntity().toBuilder()
-                .password(encodedPassword).build();
-
+        Member member = requestDto.toEntity().toBuilder().password(encodedPassword).build();
         memberRepository.save(member);
         return member.getId();
     }
@@ -54,28 +52,22 @@ public class MemberServiceImpl implements MemberService {
     public void updateMember(Long id, MemberUpdateRequestDto requestDto) {
         Member member = memberRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid Member Id"));
-
-        member.updateProfile(
-            requestDto.getUsername(),
-            requestDto.getEmail(),
-            requestDto.getNickname(),
-            passwordEncoder.encode(requestDto.getPassword())
-        );
+        member.updateProfile(requestDto.getUsername(), requestDto.getEmail(),
+            requestDto.getNickname(), passwordEncoder.encode(requestDto.getPassword()),
+            requestDto.getProfileImageUrl());
     }
 
     @Override
     public void deleteMember(Long id) {
         Member member = memberRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-
         memberRepository.delete(member);
     }
 
     @Override
     public MemberProfileResponseDto getMemberProfileByNickname(String nickname) {
         Member member = memberRepository.findByNickname(nickname)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-
+            .orElseThrow(() -> new IllegalArgumentException("Member not found"));
         return memberProfileResponseDtoFactory.createFromMember(member);
     }
 

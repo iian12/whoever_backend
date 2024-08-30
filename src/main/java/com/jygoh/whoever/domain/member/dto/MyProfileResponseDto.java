@@ -1,11 +1,10 @@
 package com.jygoh.whoever.domain.member.dto;
 
 import com.jygoh.whoever.domain.follow.dto.FollowResponseDto;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -22,8 +21,8 @@ public class MyProfileResponseDto {
 
     @Builder
     public MyProfileResponseDto(String username, String email, String nickname, String role,
-                                List<PostForProfileDto> posts, List<CommentForProfileDto> comments,
-                                List<FollowResponseDto> following, int followerCount) {
+        List<PostForProfileDto> posts, List<CommentForProfileDto> comments,
+        List<FollowResponseDto> following, int followerCount) {
         this.username = username;
         this.email = email;
         this.nickname = nickname;
@@ -37,6 +36,7 @@ public class MyProfileResponseDto {
     @Getter
     @NoArgsConstructor
     public static class PostForProfileDto {
+
         private Long id;
         private String title;
 
@@ -49,6 +49,7 @@ public class MyProfileResponseDto {
     @Getter
     @NoArgsConstructor
     public static class CommentForProfileDto {
+
         private Long id;
         private String content;
         private PostForCommentDto post;
@@ -62,6 +63,7 @@ public class MyProfileResponseDto {
         @Getter
         @NoArgsConstructor
         public static class PostForCommentDto {
+
             private Long id;
             private String title;
 

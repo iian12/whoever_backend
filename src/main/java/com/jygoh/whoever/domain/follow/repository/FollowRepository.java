@@ -1,7 +1,6 @@
 package com.jygoh.whoever.domain.follow.repository;
 
 import com.jygoh.whoever.domain.follow.model.Follow;
-
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -19,10 +19,9 @@ public class FollowController {
     }
 
     @PostMapping("/follow/{followeeId}")
-    public ResponseEntity<Void> follow(@RequestHeader("Authorization") String token, @PathVariable Long followeeId) {
-
+    public ResponseEntity<Void> follow(@RequestHeader("Authorization") String token,
+        @PathVariable Long followeeId) {
         followService.toggleFollow(token, followeeId);
-
         return ResponseEntity.ok().build();
     }
 }

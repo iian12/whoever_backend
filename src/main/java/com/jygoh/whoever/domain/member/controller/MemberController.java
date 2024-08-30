@@ -28,7 +28,8 @@ public class MemberController {
     private final MemberService memberService;
     private final PasswordResetService passwordResetService;
 
-    public MemberController(MemberService memberService, PasswordResetService passwordResetService) {
+    public MemberController(MemberService memberService,
+        PasswordResetService passwordResetService) {
         this.memberService = memberService;
         this.passwordResetService = passwordResetService;
     }
@@ -36,23 +37,20 @@ public class MemberController {
     @PostMapping("/register")
     public ResponseEntity<Long> register(@RequestBody MemberCreateRequestDto requestDto) {
         Long memberId = memberService.register(requestDto);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(memberId);
     }
 
     @GetMapping("/profile/{nickname}")
-    public ResponseEntity<MemberProfileResponseDto> getMemberProfile(@PathVariable String nickname) {
+    public ResponseEntity<MemberProfileResponseDto> getMemberProfile(
+        @PathVariable String nickname) {
         MemberProfileResponseDto profile = memberService.getMemberProfileByNickname(nickname);
         return ResponseEntity.ok(profile);
     }
 
     @GetMapping("/me")
     public ResponseEntity<MyProfileResponseDto> getMyProfile(HttpServletRequest request) {
-
         String token = TokenUtils.extractTokenFromRequest(request);
-
         MyProfileResponseDto responseDto = memberService.getMyProfile(token);
-
         return ResponseEntity.ok(responseDto);
     }
 
@@ -70,7 +68,8 @@ public class MemberController {
     public ResponseEntity<String> verifyOtp(@RequestBody OtpVerifyRequestDto requestDto) {
         try {
             boolean isValid = passwordResetService.verifyOtp(requestDto);
-            return isValid ? ResponseEntity.ok("OTP is valid.") : ResponseEntity.badRequest().body("Invalid OTP.");
+            return isValid ? ResponseEntity.ok("OTP is valid.")
+                : ResponseEntity.badRequest().body("Invalid OTP.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

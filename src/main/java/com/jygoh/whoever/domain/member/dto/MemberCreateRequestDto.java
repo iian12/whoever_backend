@@ -11,11 +11,8 @@ import lombok.NoArgsConstructor;
 public class MemberCreateRequestDto {
 
     private String username;
-
     private String password;
-
     private String email;
-
     private String nickname;
 
     @Builder
@@ -27,12 +24,8 @@ public class MemberCreateRequestDto {
     }
 
     public Member toEntity() {
-        return Member.builder()
-                .username(this.username)
-                .password(this.password) // 비밀번호는 보통 인코딩된 상태로 전달해야 함
-                .email(this.email)
-                .nickname(this.nickname)
-                .role(Role.MEMBER)
-                .build();
+        return Member.builder().username(this.username)
+            .password(this.password) // 비밀번호는 보통 인코딩된 상태로 전달해야 함
+            .email(this.email).nickname(this.nickname).role(Role.MEMBER).build();
     }
 }

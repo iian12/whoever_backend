@@ -21,8 +21,7 @@ public class CommentDto {
     }
 
     private String findAuthorNickname(Long authorId, MemberRepository memberRepository) {
-        return memberRepository.findById(authorId)
-                .map(Member::getNickname)
-                .orElse("Unknown"); // Default value if the author is not found
+        return memberRepository.findById(authorId).map(Member::getNickname)
+            .orElse("Unknown"); // Default value if the author is not found
     }
 }

@@ -1,14 +1,21 @@
 package com.jygoh.whoever.domain.post.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -52,10 +59,9 @@ public class Post {
     private List<Long> hashtagIds = new ArrayList<>();
 
     @Builder
-    public Post(String title, String content, Long authorId,
-                String authorNickname, String thumbnailUrl, LocalDateTime createdAt,
-                LocalDateTime updatedAt, List<Long> commentIds,
-                List<Long> hashtagIds, int viewCount, int likeCount) {
+    public Post(String title, String content, Long authorId, String authorNickname,
+        String thumbnailUrl, LocalDateTime createdAt, LocalDateTime updatedAt,
+        List<Long> commentIds, List<Long> hashtagIds, int viewCount, int likeCount) {
         this.title = title;
         this.content = content;
         this.authorId = authorId;
@@ -89,7 +95,8 @@ public class Post {
         this.likeCount--;
     }
 
-    public void updatePost(String title, String content, String thumbnailUrl, List<Long> hashtagIds) {
+    public void updatePost(String title, String content, String thumbnailUrl,
+        List<Long> hashtagIds) {
         this.title = title;
         this.content = content;
         this.hashtagIds = hashtagIds;

@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class RecommendationServiceImpl implements RecommendationService {
+
     @Override
     public String getRecommendedPosts(String memberId) {
         return "";

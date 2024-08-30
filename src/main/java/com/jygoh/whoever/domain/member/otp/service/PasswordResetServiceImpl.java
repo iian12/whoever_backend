@@ -20,7 +20,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private final OTPRepository otpRepository;
     private final BCryptPasswordEncoder bcryptPasswordEncoder;
 
-    public PasswordResetServiceImpl(MemberRepository memberRepository, EmailService emailService, OTPRepository otpRepository, BCryptPasswordEncoder bcryptPasswordEncoder) {
+    public PasswordResetServiceImpl(MemberRepository memberRepository, EmailService emailService,
+        OTPRepository otpRepository, BCryptPasswordEncoder bcryptPasswordEncoder) {
         this.memberRepository = memberRepository;
         this.emailService = emailService;
         this.otpRepository = otpRepository;
@@ -29,39 +30,28 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     public void sendOtp(SendOtpRequestDto requestDto) {
-
         String username = requestDto.getUsername();
         String email = requestDto.getEmail();
-
         Member member = memberRepository.findByUsernameAndEmail(username, email)
             .orElseThrow(() -> new IllegalArgumentException("Member not found."));
-
         String otpCode = generateOtpCode();
-        OTP otpEntity = OTP.builder()
-            .member(member)
-            .otp(otpCode)
-            .expiryTime(LocalDateTime.now().plusMinutes(10))
-            .build();
+        OTP otpEntity = OTP.builder().member(member).otp(otpCode)
+            .expiryTime(LocalDateTime.now().plusMinutes(10)).build();
         otpRepository.save(otpEntity);
-
         emailService.sendEmail(email, "Password Reset OTP", "Your OTP is: " + otpCode);
     }
 
     @Override
     public boolean verifyOtp(OtpVerifyRequestDto requestDto) {
-
         String email = requestDto.getEmail();
         String otp = requestDto.getOtp();
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("Member not found."));
-
         OTP otpEntity = otpRepository.findByMemberAndOtp(member, otp)
             .orElseThrow(() -> new IllegalArgumentException("Invalid OTP"));
-
         if (otpEntity.isExpired()) {
             throw new IllegalArgumentException("OTP has expired");
         }
-
         return true;
     }
 
@@ -69,7 +59,6 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     public void resetPassword(PasswordResetRequestDto requestDto) {
         Member member = memberRepository.findByEmail(requestDto.getEmail())
             .orElseThrow(() -> new IllegalArgumentException("Member not found."));
-
         member.updatePassword(bcryptPasswordEncoder.encode(requestDto.getNewPassword()));
         memberRepository.save(member);
     }

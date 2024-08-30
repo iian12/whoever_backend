@@ -17,7 +17,7 @@ public class OtpServiceImpl implements OtpService {
 
 
     @Override
-    @Scheduled(fixedRate= 600000)
+    @Scheduled(fixedRate = 600000)
     public void deleteExpiredOtps() {
         otpRepository.deleteExpiredOtps();
     }

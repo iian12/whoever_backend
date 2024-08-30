@@ -1,10 +1,9 @@
 package com.jygoh.whoever.domain.member.dto;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -15,7 +14,8 @@ public class MemberProfileResponseDto {
     private int followerCount;
 
     @Builder
-    public MemberProfileResponseDto(String nickname, List<PostForProfileDto> posts, int followerCount) {
+    public MemberProfileResponseDto(String nickname, List<PostForProfileDto> posts,
+        int followerCount) {
         this.nickname = nickname;
         this.posts = posts;
         this.followerCount = followerCount;
@@ -24,6 +24,7 @@ public class MemberProfileResponseDto {
     @Getter
     @NoArgsConstructor
     public static class PostForProfileDto {
+
         private Long id;
         private String title;
 

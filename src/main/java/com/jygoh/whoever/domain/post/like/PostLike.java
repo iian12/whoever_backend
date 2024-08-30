@@ -27,8 +27,12 @@ public class PostLike {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         PostLike postLike = (PostLike) o;
         return postId.equals(postLike.postId) && memberId.equals(postLike.memberId);
     }

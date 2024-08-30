@@ -1,7 +1,6 @@
 package com.jygoh.whoever.global.config;
 
 import java.util.Properties;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,17 +18,12 @@ public class MailConfig {
 
     @Bean
     public JavaMailSender JavaMailSender() {
-
         JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
-
         javaMailSender.setHost("smtp.gmail.com");
         javaMailSender.setUsername(username);
         javaMailSender.setPassword(password);
-
         javaMailSender.setPort(587);
-
         javaMailSender.setJavaMailProperties(getMailProperties());
-
         return javaMailSender;
     }
 
@@ -39,10 +33,8 @@ public class MailConfig {
         properties.setProperty("mail.smtp.auth", "true");
         properties.setProperty("mail.smtp.starttls.enable", "true");
         properties.setProperty("mail.debug", "true");
-
-
-        properties.setProperty("mail.smtp.ssl.trust","smtp.gmail.com");
-        properties.setProperty("mail.smtp.ssl.enable","false");
+        properties.setProperty("mail.smtp.ssl.trust", "smtp.gmail.com");
+        properties.setProperty("mail.smtp.ssl.enable", "false");
         return properties;
     }
 }

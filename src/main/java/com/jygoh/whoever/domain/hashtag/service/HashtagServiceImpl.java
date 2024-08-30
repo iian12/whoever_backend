@@ -25,8 +25,6 @@ public class HashtagServiceImpl implements HashtagService {
 
     @Override
     public List<Hashtag> findOrCreateHashtags(List<String> names) {
-        return names.stream()
-            .map(this::createOrGetHashtag)
-            .collect(Collectors.toList());
+        return names.stream().map(this::createOrGetHashtag).collect(Collectors.toList());
     }
 }

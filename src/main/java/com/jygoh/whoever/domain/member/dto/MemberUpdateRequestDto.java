@@ -16,11 +16,15 @@ public class MemberUpdateRequestDto {
 
     private String nickname;
 
+    private String profileImageUrl;
+
     @Builder
-    public MemberUpdateRequestDto(String username, String password, String email, String nickname) {
+    public MemberUpdateRequestDto(String username, String password, String email, String nickname,
+        String profileImageUrl) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.nickname = nickname;
+        this.profileImageUrl = profileImageUrl;
     }
 }

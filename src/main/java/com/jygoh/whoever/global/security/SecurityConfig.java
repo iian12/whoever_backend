@@ -26,24 +26,21 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/member/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/posts").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/posts/**").permitAll() // GET 요청만 인증 없이 허용
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
-
+        http.csrf(AbstractHttpConfigurer::disable).sessionManagement(
+                session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/api/v1/member/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/posts").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/posts/**").permitAll() // GET 요청만 인증 없이 허용
+                .anyRequest().authenticated())
+            .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(
+        AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
