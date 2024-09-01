@@ -6,9 +6,11 @@ import com.jygoh.whoever.domain.member.dto.MemberProfileResponseDtoFactory;
 import com.jygoh.whoever.domain.member.dto.MemberUpdateRequestDto;
 import com.jygoh.whoever.domain.member.dto.MyProfileResponseDto;
 import com.jygoh.whoever.domain.member.dto.MyProfileResponseDtoFactory;
+import com.jygoh.whoever.domain.member.dto.SocialLoginRequestDto;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
+import java.util.Optional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,17 +37,39 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Long register(MemberCreateRequestDto requestDto) {
+    public Long registerMember(MemberCreateRequestDto requestDto) {
         if (memberRepository.existsByUsername(requestDto.getUsername())) {
             throw new IllegalArgumentException("이미 사용 중인 사용자 이름입니다.");
         }
         if (memberRepository.existsByEmail(requestDto.getEmail())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
+        Optional<Member> existingMember = memberRepository.findByEmail(requestDto.getEmail());
+        if (existingMember.isPresent()) {
+            Member member = existingMember.get();
+            if (!member.getProviders().isEmpty()) {
+                throw new IllegalArgumentException("소셜 로그인으로 이미 가입된 사용자입니다. 이메일을 사용할 수 없습니다.");
+            }
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
         Member member = requestDto.toEntity().toBuilder().password(encodedPassword).build();
         memberRepository.save(member);
         return member.getId();
+    }
+
+    @Override
+    public Long registerOrUpdateWithSocialLogin(SocialLoginRequestDto requestDto) {
+        Optional<Member> existingMember = memberRepository.findByEmail(requestDto.getEmail());
+        if (existingMember.isPresent()) {
+            Member member = existingMember.get();
+            if (!member.hasProvider(requestDto.getProvider())) {
+                member.addProvider(requestDto.getProvider(), requestDto.getProviderId());
+                return member.getId();
+            }
+        }
+        Member member = requestDto.toEntity();
+        return memberRepository.save(member).getId();
     }
 
     @Override

@@ -6,6 +6,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,6 +39,14 @@ public class Member {
 
     private String profileImageUrl;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_providers", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "provider")
+    private Set<Provider> providers = new HashSet<>();
+
+    private String providerId;
+
     @ElementCollection
     @CollectionTable(name = "MemberFollowing", joinColumns = @JoinColumn(name = "member_id"))
     @Column(name = "following_id")
@@ -65,12 +74,15 @@ public class Member {
 
     @Builder(toBuilder = true)
     public Member(String username, String password, String email, String nickname,
-        String profileImageUrl, Set<Long> followingIds, Set<Long> followerIds, List<Long> postIds,
-        Role role, List<Long> commentIds, int followerCount) {
+        Set<Provider> providers, String providerId, String profileImageUrl, Set<Long> followingIds,
+        Set<Long> followerIds, List<Long> postIds, Role role, List<Long> commentIds,
+        int followerCount) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.nickname = nickname;
+        this.providers = providers;
+        this.providerId = providerId;
         this.profileImageUrl = profileImageUrl;
         this.followingIds = followingIds != null ? followingIds : new HashSet<>();
         this.followerIds = followerIds != null ? followerIds : new HashSet<>();
@@ -87,6 +99,17 @@ public class Member {
         this.nickname = nickname;
         this.password = encodedPassword;
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public boolean hasProvider(Provider provider) {
+        return this.providers.contains(provider);
+    }
+
+    public void addProvider(Provider provider, String providerId) {
+        this.providers.add(provider);
+        if (providerId != null && !providerId.isEmpty()) {
+            this.providerId = providerId;
+        }
     }
 
     public void updatePassword(String encodedPassword) {
