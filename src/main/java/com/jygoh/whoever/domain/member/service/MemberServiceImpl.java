@@ -6,7 +6,6 @@ import com.jygoh.whoever.domain.member.dto.MemberProfileResponseDtoFactory;
 import com.jygoh.whoever.domain.member.dto.MemberUpdateRequestDto;
 import com.jygoh.whoever.domain.member.dto.MyProfileResponseDto;
 import com.jygoh.whoever.domain.member.dto.MyProfileResponseDtoFactory;
-import com.jygoh.whoever.domain.member.dto.SocialLoginRequestDto;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
@@ -56,20 +55,6 @@ public class MemberServiceImpl implements MemberService {
         Member member = requestDto.toEntity().toBuilder().password(encodedPassword).build();
         memberRepository.save(member);
         return member.getId();
-    }
-
-    @Override
-    public Long registerOrUpdateWithSocialLogin(SocialLoginRequestDto requestDto) {
-        Optional<Member> existingMember = memberRepository.findByEmail(requestDto.getEmail());
-        if (existingMember.isPresent()) {
-            Member member = existingMember.get();
-            if (!member.hasProvider(requestDto.getProvider())) {
-                member.addProvider(requestDto.getProvider(), requestDto.getProviderId());
-                return member.getId();
-            }
-        }
-        Member member = requestDto.toEntity();
-        return memberRepository.save(member).getId();
     }
 
     @Override

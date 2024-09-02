@@ -25,6 +25,6 @@ public class MemberCreateRequestDto {
 
     public Member toEntity() {
         return Member.builder().username(this.username).password(this.password).email(this.email)
-            .nickname(this.nickname).role(Role.MEMBER).build();
+            .nickname(this.nickname).role(Role.MEMBER).signupCompleted(true).build();
     }
 }

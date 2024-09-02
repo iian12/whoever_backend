@@ -47,6 +47,8 @@ public class Member {
 
     private String providerId;
 
+    private boolean signupCompleted;
+
     @ElementCollection
     @CollectionTable(name = "MemberFollowing", joinColumns = @JoinColumn(name = "member_id"))
     @Column(name = "following_id")
@@ -74,15 +76,16 @@ public class Member {
 
     @Builder(toBuilder = true)
     public Member(String username, String password, String email, String nickname,
-        Set<Provider> providers, String providerId, String profileImageUrl, Set<Long> followingIds,
-        Set<Long> followerIds, List<Long> postIds, Role role, List<Long> commentIds,
-        int followerCount) {
+        Set<Provider> providers, String providerId, boolean signupCompleted, String profileImageUrl,
+        Set<Long> followingIds, Set<Long> followerIds, List<Long> postIds, Role role,
+        List<Long> commentIds, int followerCount) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.nickname = nickname;
         this.providers = providers;
         this.providerId = providerId;
+        this.signupCompleted = signupCompleted;
         this.profileImageUrl = profileImageUrl;
         this.followingIds = followingIds != null ? followingIds : new HashSet<>();
         this.followerIds = followerIds != null ? followerIds : new HashSet<>();
@@ -101,15 +104,15 @@ public class Member {
         this.profileImageUrl = profileImageUrl;
     }
 
-    public boolean hasProvider(Provider provider) {
-        return this.providers.contains(provider);
-    }
-
     public void addProvider(Provider provider, String providerId) {
         this.providers.add(provider);
         if (providerId != null && !providerId.isEmpty()) {
             this.providerId = providerId;
         }
+    }
+
+    public void updateProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 
     public void updatePassword(String encodedPassword) {
@@ -124,5 +127,12 @@ public class Member {
         if (this.followerCount > 0) {
             this.followerCount--;
         }
+    }
+
+    public void completeSignup(String password, String nickname) {
+        this.password = password;
+        this.nickname = nickname;
+        this.signupCompleted = true;
+
     }
 }
