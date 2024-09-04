@@ -7,21 +7,19 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class MemberUpdateRequestDto {
-
-    private String username;
+    private String email;
 
     private String password;
 
-    private String email;
 
     private String nickname;
 
     private String profileImageUrl;
 
     @Builder
-    public MemberUpdateRequestDto(String username, String password, String email, String nickname,
+    public MemberUpdateRequestDto(String email, String password, String nickname,
         String profileImageUrl) {
-        this.username = username;
+        this.email = email;
         this.password = password;
         this.email = email;
         this.nickname = nickname;

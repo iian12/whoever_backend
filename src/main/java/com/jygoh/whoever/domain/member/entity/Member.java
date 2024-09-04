@@ -29,11 +29,9 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String username;
+    private String email;
 
     private String password;
-
-    private String email;
 
     private String nickname;
 
@@ -47,7 +45,6 @@ public class Member {
 
     private String providerId;
 
-    private boolean signupCompleted;
 
     @ElementCollection
     @CollectionTable(name = "MemberFollowing", joinColumns = @JoinColumn(name = "member_id"))
@@ -75,17 +72,15 @@ public class Member {
     private int followerCount;
 
     @Builder(toBuilder = true)
-    public Member(String username, String password, String email, String nickname,
-        Set<Provider> providers, String providerId, boolean signupCompleted, String profileImageUrl,
+    public Member(String password, String email, String nickname,
+        Set<Provider> providers, String providerId, String profileImageUrl,
         Set<Long> followingIds, Set<Long> followerIds, List<Long> postIds, Role role,
         List<Long> commentIds, int followerCount) {
-        this.username = username;
         this.password = password;
         this.email = email;
         this.nickname = nickname;
-        this.providers = providers;
+        this.providers = providers != null ? new HashSet<>(providers) : new HashSet<>();
         this.providerId = providerId;
-        this.signupCompleted = signupCompleted;
         this.profileImageUrl = profileImageUrl;
         this.followingIds = followingIds != null ? followingIds : new HashSet<>();
         this.followerIds = followerIds != null ? followerIds : new HashSet<>();
@@ -95,9 +90,8 @@ public class Member {
         this.followerCount = followerCount;
     }
 
-    public void updateProfile(String username, String email, String nickname,
+    public void updateProfile(String email, String nickname,
         String encodedPassword, String profileImageUrl) {
-        this.username = username;
         this.email = email;
         this.nickname = nickname;
         this.password = encodedPassword;
@@ -127,12 +121,5 @@ public class Member {
         if (this.followerCount > 0) {
             this.followerCount--;
         }
-    }
-
-    public void completeSignup(String password, String nickname) {
-        this.password = password;
-        this.nickname = nickname;
-        this.signupCompleted = true;
-
     }
 }

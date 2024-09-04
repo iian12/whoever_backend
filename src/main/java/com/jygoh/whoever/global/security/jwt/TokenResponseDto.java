@@ -3,8 +3,10 @@ package com.jygoh.whoever.global.security.jwt;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class TokenResponseDto {
 

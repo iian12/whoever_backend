@@ -7,9 +7,12 @@ import com.jygoh.whoever.domain.member.dto.MemberUpdateRequestDto;
 import com.jygoh.whoever.domain.member.dto.MyProfileResponseDto;
 import com.jygoh.whoever.domain.member.dto.MyProfileResponseDtoFactory;
 import com.jygoh.whoever.domain.member.entity.Member;
+import com.jygoh.whoever.domain.member.entity.Provider;
+import com.jygoh.whoever.domain.member.entity.Role;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +40,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Long registerMember(MemberCreateRequestDto requestDto) {
-        if (memberRepository.existsByUsername(requestDto.getUsername())) {
+        if (memberRepository.existsByEmail(requestDto.getEmail())) {
             throw new IllegalArgumentException("이미 사용 중인 사용자 이름입니다.");
         }
         if (memberRepository.existsByEmail(requestDto.getEmail())) {
@@ -58,12 +61,36 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public Long processOAuth2User(String email, String name, Provider provider,
+        String profileImageUrl, String providerId) {
+        // 기존 사용자를 찾습니다.
+        Member member = memberRepository.findByEmail(email)
+            .orElseGet(() -> createNewMember(email, name, provider, profileImageUrl, providerId));
+        // Provider 추가 또는 업데이트
+        member.addProvider(provider, providerId);
+        member.updateProfileImageUrl(profileImageUrl);
+        memberRepository.save(member);
+        return member.getId();
+    }
+
+
+    private Member createNewMember(String email, String name, Provider provider,
+        String profileImageUrl, String providerId) {
+        // 새로운 Member 객체 생성
+        Member newMember = Member.builder().email(email).nickname(name)  // nickname을 name으로 설정
+            .profileImageUrl(profileImageUrl).providers(Set.of(provider))
+            .providerId(providerId) // providerId 설정
+            .role(Role.MEMBER) // 기본 역할 설정
+            .build();
+        return memberRepository.save(newMember);
+    }
+
+    @Override
     public void updateMember(Long id, MemberUpdateRequestDto requestDto) {
         Member member = memberRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid Member Id"));
-        member.updateProfile(requestDto.getUsername(), requestDto.getEmail(),
-            requestDto.getNickname(), passwordEncoder.encode(requestDto.getPassword()),
-            requestDto.getProfileImageUrl());
+        member.updateProfile(requestDto.getEmail(), requestDto.getNickname(),
+            passwordEncoder.encode(requestDto.getPassword()), requestDto.getProfileImageUrl());
     }
 
     @Override
