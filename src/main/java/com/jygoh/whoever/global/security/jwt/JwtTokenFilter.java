@@ -1,5 +1,6 @@
 package com.jygoh.whoever.global.security.jwt;
 
+import com.jygoh.whoever.global.auth.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,16 +9,15 @@ import java.io.IOException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService userDetailsService;
 
-    public JwtTokenFilter(JwtTokenProvider jwtTokenProvider, UserDetailsService userDetailsService) {
+    public JwtTokenFilter(JwtTokenProvider jwtTokenProvider, CustomUserDetailsService userDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = userDetailsService;
     }
@@ -34,11 +34,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
 
             // 사용자 ID를 사용하여 UserDetails를 로드합니다.
-            UserDetails userDetails = userDetailsService.loadUserByUsername(memberId.toString());
+            UserDetails userDetails = userDetailsService.loadUserById(memberId);
 
             // 인증 객체를 생성합니다.
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
+
 
             // WebAuthenticationDetailsSource를 사용하여 인증 정보를 설정합니다.
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

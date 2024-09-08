@@ -18,14 +18,16 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Member member = memberRepository.findByEmail(email).orElseThrow(
-            () -> new UsernameNotFoundException("User not found with username: " + email));
-        return new CustomUserDetails(member);
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+
+        // CustomUserDetail 생성 시, Member 객체와 Member ID를 전달
+        return new CustomUserDetail(member, member.getId());
     }
 
-    public UserDetails loadUserById(Long memberId) throws UsernameNotFoundException {
-        Member member = memberRepository.findById(memberId).orElseThrow(
-            () -> new UsernameNotFoundException("User not found with ID: " + memberId));
-        return new CustomUserDetails(member);
+    public UserDetails loadUserById(Long id) throws UsernameNotFoundException {
+        Member member = memberRepository.findById(id)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
+        return new CustomUserDetail(member, member.getId());
     }
 }

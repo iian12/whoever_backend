@@ -46,8 +46,8 @@ public class AuthServiceImpl implements AuthService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(requestDto.getEmail());
         // 비밀번호 검증
         if (passwordEncoder.matches(requestDto.getPassword(), userDetails.getPassword())) {
-            String accessToken = jwtTokenProvider.createAccessToken(((CustomUserDetails) userDetails).getId());
-            String refreshToken = jwtTokenProvider.createRefreshToken(((CustomUserDetails) userDetails).getId());
+            String accessToken = jwtTokenProvider.createAccessToken(member.getId());
+            String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
 
             // TokenResponseDto 반환
             return TokenResponseDto.builder()

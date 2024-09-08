@@ -6,29 +6,39 @@ import com.jygoh.whoever.domain.member.otp.service.PasswordResetRequestDto;
 import com.jygoh.whoever.domain.member.otp.service.PasswordResetService;
 import com.jygoh.whoever.domain.member.otp.service.SendOtpRequestDto;
 import com.jygoh.whoever.domain.member.service.MemberService;
+import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import com.jygoh.whoever.global.security.jwt.TokenResponseDto;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
     private final MemberService memberService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final CustomUserDetailsService customUserDetailsService;
 
     public AuthController(AuthService authService, PasswordResetService passwordResetService,
-        MemberService memberService) {
+        MemberService memberService, JwtTokenProvider jwtTokenProvider,
+        CustomUserDetailsService customUserDetailsService) {
         this.authService = authService;
         this.passwordResetService = passwordResetService;
         this.memberService = memberService;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @PostMapping("/login")
@@ -39,8 +49,8 @@ public class AuthController {
 
             // 리프레시 토큰을 쿠키로 설정
             Cookie refreshTokenCookie = new Cookie("refreshToken", tokenResponse.getRefreshToken());
-            refreshTokenCookie.setHttpOnly(true);
-            refreshTokenCookie.setSecure(true); // HTTPS 환경에서만 사용 가능
+            refreshTokenCookie.setHttpOnly(false);
+            refreshTokenCookie.setSecure(false); // HTTPS 환경에서만 사용 가능
             refreshTokenCookie.setPath("/"); // 전체 경로에서 사용 가능
             refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일
 
@@ -84,5 +94,35 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request) {
+        String refreshToken = getRefreshTokenFromCookie(request);
+
+        if (refreshToken != null || !jwtTokenProvider.validateToken(refreshToken)) {
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+        }
+
+        Long memberId = jwtTokenProvider.getMemberIdFromToken(refreshToken);
+        UserDetails userDetails = customUserDetailsService.loadUserById(memberId);
+
+        String newAccessToken = jwtTokenProvider.createAccessToken(memberId);
+        TokenResponseDto tokenResponseDto = new TokenResponseDto(newAccessToken, null);
+
+        return ResponseEntity.ok(tokenResponseDto);
+    }
+
+    private String getRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("refreshToken")) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }
