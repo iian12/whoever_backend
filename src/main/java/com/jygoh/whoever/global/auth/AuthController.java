@@ -5,7 +5,6 @@ import com.jygoh.whoever.domain.member.otp.service.OtpVerifyRequestDto;
 import com.jygoh.whoever.domain.member.otp.service.PasswordResetRequestDto;
 import com.jygoh.whoever.domain.member.otp.service.PasswordResetService;
 import com.jygoh.whoever.domain.member.otp.service.SendOtpRequestDto;
-import com.jygoh.whoever.domain.member.service.MemberService;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import com.jygoh.whoever.global.security.jwt.TokenResponseDto;
 import jakarta.servlet.http.Cookie;
@@ -14,7 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,37 +25,35 @@ public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
-    private final MemberService memberService;
     private final JwtTokenProvider jwtTokenProvider;
-    private final CustomUserDetailsService customUserDetailsService;
 
     public AuthController(AuthService authService, PasswordResetService passwordResetService,
-        MemberService memberService, JwtTokenProvider jwtTokenProvider,
-        CustomUserDetailsService customUserDetailsService) {
+        JwtTokenProvider jwtTokenProvider) {
         this.authService = authService;
         this.passwordResetService = passwordResetService;
-        this.memberService = memberService;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.customUserDetailsService = customUserDetailsService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDto> login(@RequestBody MemberLoginRequestDto requestDto,
+    public ResponseEntity<String> login(@RequestBody MemberLoginRequestDto requestDto,
         HttpServletResponse response) {
         try {
             TokenResponseDto tokenResponse = authService.login(requestDto);
-
+            // 액세스 토큰을 쿠키로 설정
+            Cookie accessTokenCookie = new Cookie("accessToken", tokenResponse.getAccessToken());
+            accessTokenCookie.setHttpOnly(false);
+            accessTokenCookie.setSecure(false); // HTTPS 환경에서만 사용 가능
+            accessTokenCookie.setPath("/"); // 전체 경로에서 사용 가능
+            accessTokenCookie.setMaxAge(60 * 60 * 2); // 2h
             // 리프레시 토큰을 쿠키로 설정
             Cookie refreshTokenCookie = new Cookie("refreshToken", tokenResponse.getRefreshToken());
             refreshTokenCookie.setHttpOnly(false);
             refreshTokenCookie.setSecure(false); // HTTPS 환경에서만 사용 가능
             refreshTokenCookie.setPath("/"); // 전체 경로에서 사용 가능
-            refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일
-
+            refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60 * 2); // 7일
             response.addCookie(refreshTokenCookie);
-
             // 액세스 토큰을 JSON 응답으로 반환
-            return ResponseEntity.ok(tokenResponse);
+            return ResponseEntity.ok("Login Success");
         } catch (Exception e) {
             // 로그인 실패 시 401 상태 코드 반환
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
@@ -97,21 +93,21 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request) {
+    public ResponseEntity<?> refreshAccessToken(@RequestBody HttpServletRequest request,
+        HttpServletResponse response) {
         String refreshToken = getRefreshTokenFromCookie(request);
-
-        if (refreshToken != null || !jwtTokenProvider.validateToken(refreshToken)) {
-
+        if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
         }
-
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(refreshToken);
-        UserDetails userDetails = customUserDetailsService.loadUserById(memberId);
-
-        String newAccessToken = jwtTokenProvider.createAccessToken(memberId);
-        TokenResponseDto tokenResponseDto = new TokenResponseDto(newAccessToken, null);
-
-        return ResponseEntity.ok(tokenResponseDto);
+        String newAccessToken = (authService.refreshToken(refreshToken)).getAccessToken();
+        // 리프레시 토큰을 쿠키로 설정
+        Cookie accessToken = new Cookie("accessToken", newAccessToken);
+        accessToken.setHttpOnly(false);
+        accessToken.setSecure(false); // HTTPS 환경에서만 사용 가능
+        accessToken.setPath("/"); // 전체 경로에서 사용 가능
+        accessToken.setMaxAge(7 * 24 * 60 * 60); // 7일
+        response.addCookie(accessToken);
+        return ResponseEntity.ok("Refresh Token success");
     }
 
     private String getRefreshTokenFromCookie(HttpServletRequest request) {

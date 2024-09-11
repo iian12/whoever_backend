@@ -5,7 +5,6 @@ import com.jygoh.whoever.domain.member.entity.Provider;
 import com.jygoh.whoever.domain.member.entity.Role;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import java.util.Collections;
-import java.util.Map;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -23,49 +22,30 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-
         String provider = userRequest.getClientRegistration().getRegistrationId();
         Provider oauthProvider = getProviderFromRegistrationId(provider);
-
         String email = getAttribute(oAuth2User, provider, "email");
         String nickname = getAttribute(oAuth2User, provider, "name");
         String profileImageUrl = getAttribute(oAuth2User, provider, "picture");
         String providerId = getAttribute(oAuth2User, provider, "sub");
-        Member member = memberRepository.findByEmail(email)
-            .map(existingMember -> {
-                existingMember.addProvider(oauthProvider, providerId);
-                return memberRepository.save(existingMember);
-            })
-            .orElseGet(() -> {
-                Member newMember = Member.builder()
-                    .email(email)
-                    .nickname(nickname)
-                    .profileImageUrl(profileImageUrl)
-                    .providers(Collections.singleton(oauthProvider))
-                    .providerId(providerId)
-                    .role(Role.MEMBER)
-                    .build();
-                return memberRepository.save(newMember);
-            });
-
+        Member member = memberRepository.findByEmail(email).map(existingMember -> {
+            existingMember.addProvider(oauthProvider, providerId);
+            return memberRepository.save(existingMember);
+        }).orElseGet(() -> {
+            Member newMember = Member.builder().email(email).nickname(nickname)
+                .profileImageUrl(profileImageUrl).providers(Collections.singleton(oauthProvider))
+                .providerId(providerId).role(Role.MEMBER).build();
+            return memberRepository.save(newMember);
+        });
         return new CustomUserDetail(oAuth2User, member.getId());
     }
 
     private String getAttribute(OAuth2User oAuth2User, String provider, String attributeName) {
-        switch (provider) {
-            case "google":
-                return (String) oAuth2User.getAttribute(attributeName);
-            case "facebook":
-                // Facebook의 경우 JSON 경로가 다를 수 있음
-                Map<String, Object> facebookAttributes = (Map<String, Object>) oAuth2User.getAttributes().get("response");
-                return (String) facebookAttributes.get(attributeName);
-            case "twitter":
-                // Twitter의 경우 JSON 경로가 다를 수 있음
-                return (String) oAuth2User.getAttributes().get("id_str");
+        return switch (provider) {
+            case "google" -> (String) oAuth2User.getAttribute(attributeName);
             // 다른 제공자에 대한 추가 처리
-            default:
-                throw new IllegalArgumentException("Unknown provider: " + provider);
-        }
+            default -> throw new IllegalArgumentException("Unknown provider: " + provider);
+        };
     }
 
     private Provider getProviderFromRegistrationId(String registrationId) {

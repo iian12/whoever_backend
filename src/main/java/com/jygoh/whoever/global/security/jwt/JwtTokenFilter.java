@@ -3,6 +3,7 @@ package com.jygoh.whoever.global.security.jwt;
 import com.jygoh.whoever.global.auth.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -17,7 +18,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService userDetailsService;
 
-    public JwtTokenFilter(JwtTokenProvider jwtTokenProvider, CustomUserDetailsService userDetailsService) {
+    public JwtTokenFilter(JwtTokenProvider jwtTokenProvider,
+        CustomUserDetailsService userDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = userDetailsService;
     }
@@ -25,43 +27,36 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
-
         // Request에서 JWT 토큰을 추출합니다.
         String token = resolveToken(request);
-
         if (token != null && jwtTokenProvider.validateToken(token)) {
             // 토큰이 유효하다면, 사용자 ID를 추출합니다.
             Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-
             // 사용자 ID를 사용하여 UserDetails를 로드합니다.
             UserDetails userDetails = userDetailsService.loadUserById(memberId);
-
             // 인증 객체를 생성합니다.
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
-
-
             // WebAuthenticationDetailsSource를 사용하여 인증 정보를 설정합니다.
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
             // Spring Security의 SecurityContext에 인증 정보를 설정합니다.
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
-
         // 다음 필터 체인으로 요청을 전달합니다.
         filterChain.doFilter(request, response);
     }
 
     private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        String value;
-        logger.info(bearerToken + " 2");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            value = bearerToken.substring(7).trim();
-            logger.info(value + ": value");
-            return value;
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }
-
 }

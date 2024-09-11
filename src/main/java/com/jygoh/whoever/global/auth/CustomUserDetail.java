@@ -3,6 +3,7 @@ package com.jygoh.whoever.global.auth;
 import com.jygoh.whoever.domain.member.entity.Member;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -45,7 +46,7 @@ public class CustomUserDetail implements UserDetails, OAuth2User {
 
     @Override
     public String getUsername() {
-        return member != null ? member.getEmail() : oAuth2User.getAttribute("email");
+        return member != null ? member.getEmail() : Objects.requireNonNull(oAuth2User).getAttribute("email");
     }
 
     @Override

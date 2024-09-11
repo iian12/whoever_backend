@@ -24,26 +24,30 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
         String accessToken = jwtTokenProvider.createAccessToken(userDetail.getMemberId());
         String refreshToken = jwtTokenProvider.createRefreshToken(userDetail.getMemberId());
-
         Cookie accessTokenCookie = createCookie("accessToken", accessToken);
         Cookie refreshTokenCookie = createCookie("refreshToken", refreshToken);
-
-        logger.info(accessTokenCookie.getValue() + " " + refreshTokenCookie.getValue());
-
         // 쿠키를 응답에 추가
         response.addCookie(accessTokenCookie);
         response.addCookie(refreshTokenCookie);
-
         // 클라이언트를 리다이렉트
         response.sendRedirect("http://localhost:3000/login/callback");
     }
 
     private Cookie createCookie(String name, String token) {
-        Cookie cookie = new Cookie(name, token);
-        cookie.setHttpOnly(false);
-        cookie.setSecure(false);
-        cookie.setPath("/");
-        cookie.setMaxAge(604800);
-        return cookie;
+        if (name.equals("accessToken")) {
+            Cookie cookie = new Cookie(name, token);
+            cookie.setHttpOnly(false);
+            cookie.setSecure(false);
+            cookie.setPath("/");
+            cookie.setMaxAge(60 * 60 * 2);
+            return cookie;
+        } else {
+            Cookie cookie = new Cookie(name, token);
+            cookie.setHttpOnly(false);
+            cookie.setSecure(false);
+            cookie.setPath("/");
+            cookie.setMaxAge(60 * 60 * 24 * 14);
+            return cookie;
+        }
     }
 }
