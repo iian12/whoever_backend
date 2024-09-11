@@ -30,9 +30,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     public void sendOtp(SendOtpRequestDto requestDto) {
-        String username = requestDto.getUsername();
         String email = requestDto.getEmail();
-        Member member = memberRepository.findByUsernameAndEmail(username, email)
+        Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("Member not found."));
         String otpCode = generateOtpCode();
         OTP otpEntity = OTP.builder().member(member).otp(otpCode)

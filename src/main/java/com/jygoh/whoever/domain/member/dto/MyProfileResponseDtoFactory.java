@@ -50,7 +50,7 @@ public class MyProfileResponseDtoFactory {
             }).collect(Collectors.toList());
         // 팔로워 수
         int followerCount = member.getFollowerCount();
-        return MyProfileResponseDto.builder().username(member.getUsername())
+        return MyProfileResponseDto.builder()
             .email(member.getEmail()).nickname(member.getNickname())
             .role(member.getRole().name())  // Assuming Role is an Enum
             .posts(posts).comments(comments).following(following).followerCount(followerCount)

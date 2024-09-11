@@ -19,7 +19,6 @@ import com.jygoh.whoever.domain.post.model.Post;
 import com.jygoh.whoever.domain.post.repository.PostRepository;
 import com.jygoh.whoever.domain.post.view.model.View;
 import com.jygoh.whoever.domain.post.view.repository.ViewRepository;
-import com.jygoh.whoever.global.auth.CustomUserDetails;
 import com.jygoh.whoever.global.auth.CustomUserDetailsService;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.util.List;
@@ -38,7 +37,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,8 +92,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public Long createPost(PostCreateRequestDto requestDto, String token) {
         Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-        UserDetails userDetails = customUserDetailsService.loadUserById(memberId);
-        Member author = ((CustomUserDetails) userDetails).getMember();
+        Member author = memberRepository.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
         List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
         List<Long> hashtagIds = hashtags.stream().map(Hashtag::getId).collect(Collectors.toList());
         String thumbnailUrl = extractThumbnailUrl(requestDto.getContent());

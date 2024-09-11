@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MyProfileResponseDto {
 
-    private String username;
     private String email;
     private String nickname;
     private String role;
@@ -20,10 +19,9 @@ public class MyProfileResponseDto {
     private int followerCount;
 
     @Builder
-    public MyProfileResponseDto(String username, String email, String nickname, String role,
+    public MyProfileResponseDto(String email, String nickname, String role,
         List<PostForProfileDto> posts, List<CommentForProfileDto> comments,
         List<FollowResponseDto> following, int followerCount) {
-        this.username = username;
         this.email = email;
         this.nickname = nickname;
         this.role = role;
