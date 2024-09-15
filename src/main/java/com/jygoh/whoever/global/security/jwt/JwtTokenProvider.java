@@ -37,22 +37,34 @@ public class JwtTokenProvider {
     }
 
     public String createAccessToken(Long memberId) {
-        if (memberId == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
+        try {
+            if (memberId == null) {
+                throw new IllegalArgumentException("User ID cannot be null");
+            }
+            Map<String, Object> claims = new HashMap<>();
+
+            String encryptedMemberId = EncryptionUtils.encrypt(memberId.toString());
+
+            claims.put("memberId", encryptedMemberId);
+            Date now = new Date();
+            Date validity = new Date(now.getTime() + accessTokenValidityInMilliseconds);
+            return Jwts.builder().setClaims(claims).setIssuedAt(now).setExpiration(validity)
+                .signWith(key, SignatureAlgorithm.HS256).compact();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create access token", e);
         }
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("memberId", memberId);
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + accessTokenValidityInMilliseconds);
-        return Jwts.builder().setClaims(claims).setIssuedAt(now).setExpiration(validity)
-            .signWith(key, SignatureAlgorithm.HS256).compact();
     }
 
     public String createRefreshToken(Long memberId) {
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds);
-        return Jwts.builder().setSubject(memberId.toString()).setIssuedAt(now)
-            .setExpiration(validity).signWith(key, SignatureAlgorithm.HS256).compact();
+        try {
+            String encryptedMemberId = EncryptionUtils.encrypt(memberId.toString());
+            Date now = new Date();
+            Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds);
+            return Jwts.builder().setSubject(encryptedMemberId).setIssuedAt(now)
+                .setExpiration(validity).signWith(key, SignatureAlgorithm.HS256).compact();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create refresh token", e);
+        }
     }
 
     public boolean validateToken(String token) {
@@ -71,14 +83,22 @@ public class JwtTokenProvider {
 
     public Long getMemberIdFromToken(String token) {
         try {
-            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
+            Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
                 .getBody();
-            // Long 타입으로 클레임 값을 가져옵니다
-            Number memberIdNumber = claims.get("memberId", Number.class);
-            if (memberIdNumber == null) {
+
+            // "memberId" 값을 String으로 가져옵니다
+            String encryptedMemberId = claims.get("memberId", String.class);
+            if (encryptedMemberId == null) {
                 throw new IllegalArgumentException("User ID in token cannot be null or empty");
             }
-            return memberIdNumber.longValue();
+
+            // 암호화된 memberId를 복호화한 후 Long 타입으로 변환합니다
+            String decryptedMemberId = EncryptionUtils.decrypt(encryptedMemberId);
+            return Long.parseLong(decryptedMemberId);
+
         } catch (JwtException e) {
             // JWT 예외 처리
             throw new IllegalArgumentException("Invalid JWT token", e);

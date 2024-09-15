@@ -32,8 +32,6 @@ public class Comment {
     @Column(nullable = false)
     private Long authorId;
 
-    private String authorNickname;
-
     @Lob
     private String content;
 
@@ -50,11 +48,10 @@ public class Comment {
     private Boolean isUpdated;
 
     @Builder
-    public Comment(Long postId, Long authorId, String authorNickname, String content,
+    public Comment(Long postId, Long authorId, String content,
         Long parentCommentId, List<Long> replyIds, LocalDateTime createdAt, Boolean isUpdated) {
         this.postId = postId;
         this.authorId = authorId;
-        this.authorNickname = authorNickname;
         this.content = content;
         this.parentCommentId = parentCommentId;
         this.replyIds = replyIds != null ? replyIds : new ArrayList<>();

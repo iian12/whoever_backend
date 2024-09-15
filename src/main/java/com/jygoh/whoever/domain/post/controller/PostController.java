@@ -1,9 +1,11 @@
 package com.jygoh.whoever.domain.post.controller;
 
+import com.jygoh.whoever.domain.member.repository.MemberRepository;
 import com.jygoh.whoever.domain.post.dto.PostCreateRequestDto;
 import com.jygoh.whoever.domain.post.dto.PostDetailResponseDto;
 import com.jygoh.whoever.domain.post.dto.PostListResponseDto;
 import com.jygoh.whoever.domain.post.service.PostService;
+import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import com.jygoh.whoever.global.security.jwt.TokenUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -25,9 +27,12 @@ public class PostController {
 
     private static final Logger log = LoggerFactory.getLogger(PostController.class);
     private final PostService postService;
+    private final MemberRepository memberRepository;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService, JwtTokenProvider jwtTokenProvider,
+        MemberRepository memberRepository) {
         this.postService = postService;
+        this.memberRepository = memberRepository;
     }
 
     @PostMapping

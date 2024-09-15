@@ -34,7 +34,7 @@ public class CommentCreateRequestDto {
 
     public Comment toEntity(Post post, Member author) {
         return Comment.builder().postId(post.getId()).authorId(author.getId())
-            .authorNickname(author.getNickname()).content(this.content)
+            .content(this.content)
             .parentCommentId(this.parentCommentId).createdAt(LocalDateTime.now()).isUpdated(false)
             .build();
     }

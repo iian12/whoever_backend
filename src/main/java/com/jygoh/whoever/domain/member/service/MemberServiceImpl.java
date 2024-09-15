@@ -10,6 +10,7 @@ import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.member.entity.Provider;
 import com.jygoh.whoever.domain.member.entity.Role;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
+import com.jygoh.whoever.domain.post.like.PostLikeRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.util.Optional;
 import java.util.Set;
@@ -26,16 +27,18 @@ public class MemberServiceImpl implements MemberService {
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberProfileResponseDtoFactory memberProfileResponseDtoFactory;
     private final MyProfileResponseDtoFactory myProfileResponseDtoFactory;
+    private final PostLikeRepository postLikeRepository;
 
     public MemberServiceImpl(MemberRepository memberRepository,
         BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider,
         MemberProfileResponseDtoFactory memberProfileResponseDtoFactory,
-        MyProfileResponseDtoFactory myProfileResponseDtoFactory) {
+        MyProfileResponseDtoFactory myProfileResponseDtoFactory, PostLikeRepository postLikeRepository) {
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.memberProfileResponseDtoFactory = memberProfileResponseDtoFactory;
         this.myProfileResponseDtoFactory = myProfileResponseDtoFactory;
+        this.postLikeRepository = postLikeRepository;
     }
 
     @Override
@@ -59,20 +62,6 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.save(member);
         return member.getId();
     }
-
-    @Override
-    public Long processOAuth2User(String email, String name, Provider provider,
-        String profileImageUrl, String providerId) {
-        // 기존 사용자를 찾습니다.
-        Member member = memberRepository.findByEmail(email)
-            .orElseGet(() -> createNewMember(email, name, provider, profileImageUrl, providerId));
-        // Provider 추가 또는 업데이트
-        member.addProvider(provider, providerId);
-        member.updateProfileImageUrl(profileImageUrl);
-        memberRepository.save(member);
-        return member.getId();
-    }
-
 
     private Member createNewMember(String email, String name, Provider provider,
         String profileImageUrl, String providerId) {
@@ -114,4 +103,5 @@ public class MemberServiceImpl implements MemberService {
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
         return myProfileResponseDtoFactory.createFromMember(member);
     }
+
 }

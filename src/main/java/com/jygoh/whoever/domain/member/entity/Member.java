@@ -45,7 +45,6 @@ public class Member {
 
     private String providerId;
 
-
     @ElementCollection
     @CollectionTable(name = "MemberFollowing", joinColumns = @JoinColumn(name = "member_id"))
     @Column(name = "following_id")
@@ -112,6 +111,7 @@ public class Member {
     public void updatePassword(String encodedPassword) {
         this.password = encodedPassword;
     }
+
 
     public void increaseFollowerCount() {
         this.followerCount++;
