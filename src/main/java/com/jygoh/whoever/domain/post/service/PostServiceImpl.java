@@ -126,22 +126,14 @@ public class PostServiceImpl implements PostService {
     public List<PostListResponseDto> getAllPosts(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
         Page<Post> postPage = postRepository.findAll(pageable);
-
         // 각 게시글의 작성자 닉네임을 조회하여 DTO로 변환
-        return postPage.stream()
-            .map(post -> {
-                // 작성자의 닉네임 조회
-                String authorNickname = memberRepository.findById(post.getAuthorId())
-                    .map(Member::getNickname)
-                    .orElse("Unknown");
-
-                // Post와 닉네임을 DTO에 전달
-                return PostListResponseDto.builder()
-                    .post(post)
-                    .authorNickname(authorNickname)
-                    .build();
-            })
-            .collect(Collectors.toList());
+        return postPage.stream().map(post -> {
+            // 작성자의 닉네임 조회
+            String authorNickname = memberRepository.findById(post.getAuthorId())
+                .map(Member::getNickname).orElse("Unknown");
+            // Post와 닉네임을 DTO에 전달
+            return PostListResponseDto.builder().post(post).authorNickname(authorNickname).build();
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -187,8 +179,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         String authorNickname = memberRepository.findById(post.getAuthorId())
-            .map(Member::getNickname)
-            .orElse("Unknown");
+            .map(Member::getNickname).orElse("Unknown");
         List<CommentDto> commentDtos = commentRepository.findByPostId(postId).stream()
             .map(comment -> new CommentDto(comment, memberRepository)).collect(Collectors.toList());
         List<HashtagDto> hashtagDtos = hashtagRepository.findAllById(post.getHashtagIds()).stream()

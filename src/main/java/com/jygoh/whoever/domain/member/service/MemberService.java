@@ -1,9 +1,8 @@
 package com.jygoh.whoever.domain.member.service;
 
 import com.jygoh.whoever.domain.member.dto.MemberCreateRequestDto;
-import com.jygoh.whoever.domain.member.dto.MemberProfileResponseDto;
 import com.jygoh.whoever.domain.member.dto.MemberUpdateRequestDto;
-import com.jygoh.whoever.domain.member.dto.MyProfileResponseDto;
+import com.jygoh.whoever.domain.member.profile.dto.MemberProfileResponseDto;
 
 public interface MemberService {
 
@@ -14,9 +13,6 @@ public interface MemberService {
     void deleteMember(Long id);
 
     MemberProfileResponseDto getMemberProfileByNickname(String nickname);
-
-    MyProfileResponseDto getMyProfile(String token);
-
 
 }
 

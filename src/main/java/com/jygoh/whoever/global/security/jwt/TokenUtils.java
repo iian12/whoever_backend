@@ -10,7 +10,6 @@ public class TokenUtils {
 
     public static String extractTokenFromRequest(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-
         // 쿠키가 존재하는지 확인
         if (cookies != null) {
             // 모든 쿠키를 순회하면서 accessToken 쿠키를 찾음
@@ -22,5 +21,4 @@ public class TokenUtils {
         }
         return null;
     }
-
 }

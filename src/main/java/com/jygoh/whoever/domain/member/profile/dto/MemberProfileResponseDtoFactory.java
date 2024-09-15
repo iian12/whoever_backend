@@ -1,4 +1,4 @@
-package com.jygoh.whoever.domain.member.dto;
+package com.jygoh.whoever.domain.member.profile.dto;
 
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.post.repository.PostRepository;
@@ -19,8 +19,7 @@ public class MemberProfileResponseDtoFactory {
         // 작성한 글의 제목을 조회
         List<MemberProfileResponseDto.PostForProfileDto> posts = postRepository.findAllByAuthorId(
                 member.getId()).stream().map(
-                post -> new MemberProfileResponseDto.PostForProfileDto(post.getId(),
-                    post.getTitle()))
+                post -> new MemberProfileResponseDto.PostForProfileDto(post.getId(), post.getTitle()))
             .collect(Collectors.toList());
         int followerCount = member.getFollowerCount();
         return MemberProfileResponseDto.builder().nickname(member.getNickname()).posts(posts)

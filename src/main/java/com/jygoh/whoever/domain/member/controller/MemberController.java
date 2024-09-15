@@ -1,11 +1,8 @@
 package com.jygoh.whoever.domain.member.controller;
 
 import com.jygoh.whoever.domain.member.dto.MemberCreateRequestDto;
-import com.jygoh.whoever.domain.member.dto.MemberProfileResponseDto;
-import com.jygoh.whoever.domain.member.dto.MyProfileResponseDto;
+import com.jygoh.whoever.domain.member.profile.dto.MemberProfileResponseDto;
 import com.jygoh.whoever.domain.member.service.MemberService;
-import com.jygoh.whoever.global.security.jwt.TokenUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,12 +35,5 @@ public class MemberController {
         @PathVariable String nickname) {
         MemberProfileResponseDto profile = memberService.getMemberProfileByNickname(nickname);
         return ResponseEntity.ok(profile);
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<MyProfileResponseDto> getMyProfile(HttpServletRequest request) {
-        String token = TokenUtils.extractTokenFromRequest(request);
-        MyProfileResponseDto responseDto = memberService.getMyProfile(token);
-        return ResponseEntity.ok(responseDto);
     }
 }
