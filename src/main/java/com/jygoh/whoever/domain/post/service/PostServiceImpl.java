@@ -17,6 +17,7 @@ import com.jygoh.whoever.domain.post.like.PostLikeRepository;
 import com.jygoh.whoever.domain.post.model.Post;
 import com.jygoh.whoever.domain.post.repository.PostRepository;
 import com.jygoh.whoever.domain.post.view.model.View;
+import com.jygoh.whoever.domain.post.view.model.ViewId;
 import com.jygoh.whoever.domain.post.view.repository.ViewRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.util.List;
@@ -140,55 +141,57 @@ public class PostServiceImpl implements PostService {
     public PostDetailResponseDto getPostDetail(Long postId, String token) {
         String redisKey = "postView:" + postId;
         // 사용자 ID를 가져오는 로직을 간소화
-        String userId = null;
+        String userId;
         if (token != null && !token.isEmpty()) {
             try {
                 Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
                 userId = (memberId != null) ? memberId.toString() : null;
+                // Redis 키에 사용자 ID 추가
+                if (userId != null) {
+                    redisKey += ":" + userId;
+                }
+                // Redis에서 조회 여부 확인
+                Boolean hasViewed = redisTemplate.hasKey(redisKey);
+                // 조회한 적이 없다면 조회수를 증가시키고 Redis에 키를 추가
+                if (Boolean.FALSE.equals(hasViewed)) {
+                    Post post = postRepository.findById(postId)
+                        .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                    // 조회수 증가
+                    post.incrementViewCount();
+                    postRepository.save(post);
+                    // Redis에 키를 추가하고 일정 시간 후에 자동으로 만료되도록 설정
+                    redisTemplate.opsForValue()
+                        .set(redisKey, "true", VIEW_EXPIRATION_TIME, TimeUnit.SECONDS);
+                    // 사용자 ID가 있는 경우 View 엔티티 처리
+                    if (memberId != null) {
+                        ViewId viewId = new ViewId(memberId, postId);
+                        // View 엔티티가 존재하는지 확인하고 필요 시 생성
+                        viewRepository.findById(viewId).orElseGet(() -> {
+                            View view = View.builder().memberId(memberId).postId(postId).build();
+                            return viewRepository.save(view);
+                        });
+                    }
+                }
+                // 포스트, 댓글 및 해시태그 정보를 조회
+                Post post = postRepository.findById(postId)
+                    .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                String authorNickname = memberRepository.findById(post.getAuthorId())
+                    .map(Member::getNickname).orElse("Unknown");
+                List<CommentDto> commentDtos = commentRepository.findByPostId(postId).stream()
+                    .map(comment -> new CommentDto(comment, memberRepository))
+                    .collect(Collectors.toList());
+                List<HashtagDto> hashtagDtos = hashtagRepository.findAllById(post.getHashtagIds())
+                    .stream().map(HashtagDto::new).collect(Collectors.toList());
+                return PostDetailResponseDto.builder().id(post.getId()).title(post.getTitle())
+                    .content(post.getContent()).authorNickname(authorNickname)
+                    .createdAt(post.getCreatedAt()).updatedAt(post.getUpdatedAt())
+                    .comments(commentDtos).hashtags(hashtagDtos).viewCount(post.getViewCount())
+                    .commentCount(post.getCommentCount()).build();
             } catch (Exception e) {
                 throw new RuntimeException("Error processing token: " + e.getMessage(), e);
             }
         }
-        // Redis 키에 사용자 ID 추가
-        if (userId != null) {
-            redisKey += ":" + userId;
-        }
-        // Redis에서 조회 여부 확인
-        Boolean hasViewed = redisTemplate.hasKey(redisKey);
-        // 조회한 적이 없다면 조회수를 증가시키고 Redis에 키를 추가
-        if (Boolean.FALSE.equals(hasViewed)) {
-            Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-            // 조회수 증가
-            post.incrementViewCount();
-            postRepository.save(post);
-            // Redis에 키를 추가하고 일정 시간 후에 자동으로 만료되도록 설정
-            redisTemplate.opsForValue()
-                .set(redisKey, "true", VIEW_EXPIRATION_TIME, TimeUnit.SECONDS);
-            // 사용자 ID가 있는 경우 View 엔티티 처리
-            if (userId != null) {
-                Long memberId = Long.parseLong(userId);
-                // View 엔티티가 존재하는지 확인하고 필요 시 생성
-                viewRepository.findByMemberIdAndPostId(memberId, postId).orElseGet(() -> {
-                    View view = View.builder().memberId(memberId).postId(postId).build();
-                    return viewRepository.save(view);
-                });
-            }
-        }
-        // 포스트, 댓글 및 해시태그 정보를 조회
-        Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-        String authorNickname = memberRepository.findById(post.getAuthorId())
-            .map(Member::getNickname).orElse("Unknown");
-        List<CommentDto> commentDtos = commentRepository.findByPostId(postId).stream()
-            .map(comment -> new CommentDto(comment, memberRepository)).collect(Collectors.toList());
-        List<HashtagDto> hashtagDtos = hashtagRepository.findAllById(post.getHashtagIds()).stream()
-            .map(HashtagDto::new).collect(Collectors.toList());
-        return PostDetailResponseDto.builder().id(post.getId()).title(post.getTitle())
-            .content(post.getContent()).authorNickname(authorNickname)
-            .createdAt(post.getCreatedAt()).updatedAt(post.getUpdatedAt()).comments(commentDtos)
-            .hashtags(hashtagDtos).viewCount(post.getViewCount())
-            .commentCount(post.getCommentCount()).build();
+        throw new IllegalArgumentException("Something Error");
     }
 
     @Override

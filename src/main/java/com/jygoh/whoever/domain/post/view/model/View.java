@@ -1,10 +1,8 @@
 package com.jygoh.whoever.domain.post.view.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import java.time.LocalDateTime;
@@ -18,15 +16,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class View {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "member_id", nullable = false)
-    private Long memberId;
-
-    @Column(name = "post_id", nullable = false)
-    private Long postId;
+    @EmbeddedId
+    private ViewId id;
 
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
@@ -36,8 +27,7 @@ public class View {
 
     @Builder
     public View(Long memberId, Long postId) {
-        this.memberId = memberId;
-        this.postId = postId;
+        this.id = new ViewId(memberId, postId);
     }
 
     @PrePersist
