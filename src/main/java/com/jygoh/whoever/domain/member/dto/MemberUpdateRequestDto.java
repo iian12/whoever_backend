@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class MemberUpdateRequestDto {
+
     private String email;
 
     private String password;
-
 
     private String nickname;
 
@@ -21,7 +21,6 @@ public class MemberUpdateRequestDto {
         String profileImageUrl) {
         this.email = email;
         this.password = password;
-        this.email = email;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
     }

@@ -1,16 +1,13 @@
 package com.jygoh.whoever.domain.member.service;
 
 import com.jygoh.whoever.domain.member.dto.MemberCreateRequestDto;
-import com.jygoh.whoever.domain.member.dto.MemberProfileResponseDto;
-import com.jygoh.whoever.domain.member.dto.MemberProfileResponseDtoFactory;
 import com.jygoh.whoever.domain.member.dto.MemberUpdateRequestDto;
-import com.jygoh.whoever.domain.member.dto.MyProfileResponseDto;
-import com.jygoh.whoever.domain.member.dto.MyProfileResponseDtoFactory;
 import com.jygoh.whoever.domain.member.entity.Member;
 import com.jygoh.whoever.domain.member.entity.Provider;
 import com.jygoh.whoever.domain.member.entity.Role;
+import com.jygoh.whoever.domain.member.profile.dto.MemberProfileResponseDto;
+import com.jygoh.whoever.domain.member.profile.dto.MemberProfileResponseDtoFactory;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
-import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,19 +20,14 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
     private final MemberProfileResponseDtoFactory memberProfileResponseDtoFactory;
-    private final MyProfileResponseDtoFactory myProfileResponseDtoFactory;
 
     public MemberServiceImpl(MemberRepository memberRepository,
-        BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider,
-        MemberProfileResponseDtoFactory memberProfileResponseDtoFactory,
-        MyProfileResponseDtoFactory myProfileResponseDtoFactory) {
+        BCryptPasswordEncoder passwordEncoder,
+        MemberProfileResponseDtoFactory memberProfileResponseDtoFactory) {
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtTokenProvider = jwtTokenProvider;
         this.memberProfileResponseDtoFactory = memberProfileResponseDtoFactory;
-        this.myProfileResponseDtoFactory = myProfileResponseDtoFactory;
     }
 
     @Override
@@ -59,20 +51,6 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.save(member);
         return member.getId();
     }
-
-    @Override
-    public Long processOAuth2User(String email, String name, Provider provider,
-        String profileImageUrl, String providerId) {
-        // 기존 사용자를 찾습니다.
-        Member member = memberRepository.findByEmail(email)
-            .orElseGet(() -> createNewMember(email, name, provider, profileImageUrl, providerId));
-        // Provider 추가 또는 업데이트
-        member.addProvider(provider, providerId);
-        member.updateProfileImageUrl(profileImageUrl);
-        memberRepository.save(member);
-        return member.getId();
-    }
-
 
     private Member createNewMember(String email, String name, Provider provider,
         String profileImageUrl, String providerId) {
@@ -105,13 +83,5 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByNickname(nickname)
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
         return memberProfileResponseDtoFactory.createFromMember(member);
-    }
-
-    @Override
-    public MyProfileResponseDto getMyProfile(String token) {
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-        return myProfileResponseDtoFactory.createFromMember(member);
     }
 }

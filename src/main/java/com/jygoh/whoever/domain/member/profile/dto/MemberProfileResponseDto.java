@@ -1,4 +1,4 @@
-package com.jygoh.whoever.domain.member.dto;
+package com.jygoh.whoever.domain.member.profile.dto;
 
 import java.util.List;
 import lombok.Builder;

@@ -22,11 +22,9 @@ public class PostCreateRequestDto {
         this.hashtagNames = hashtagNames;
     }
 
-    public Post toEntity(Long authorId, String authorNickname, String thumbnailUrl,
-        List<Long> hashtagIds) {
+    public Post toEntity(Long authorId, String thumbnailUrl, List<Long> hashtagIds) {
         return Post.builder().title(this.title).content(this.content).authorId(authorId)
-            .authorNickname(authorNickname).thumbnailUrl(thumbnailUrl)
-            .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now()).hashtagIds(hashtagIds)
-            .build();
+            .thumbnailUrl(thumbnailUrl).createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now()).hashtagIds(hashtagIds).build();
     }
 }

@@ -1,12 +1,13 @@
 package com.jygoh.whoever.domain.post.view.repository;
 
 import com.jygoh.whoever.domain.post.view.model.View;
+import com.jygoh.whoever.domain.post.view.model.ViewId;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ViewRepository extends JpaRepository<View, Long> {
+public interface ViewRepository extends JpaRepository<View, ViewId> {
 
-    boolean existsByPostIdAndMemberId(Long postId, Long memberId);
+    Optional<View> findById(ViewId viewId);
 
-    Optional<View> findByMemberIdAndPostId(Long memberId, Long postId);
+    boolean existsById(ViewId viewId);
 }

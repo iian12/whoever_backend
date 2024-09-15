@@ -6,9 +6,11 @@ import jakarta.persistence.IdClass;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Getter
 @IdClass(LikeId.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostLike {

@@ -36,7 +36,6 @@ public class Post {
     @Column(nullable = false)
     private Long authorId;
 
-    private String authorNickname;
 
     private LocalDateTime createdAt;
 
@@ -59,13 +58,12 @@ public class Post {
     private List<Long> hashtagIds = new ArrayList<>();
 
     @Builder
-    public Post(String title, String content, Long authorId, String authorNickname,
+    public Post(String title, String content, Long authorId,
         String thumbnailUrl, LocalDateTime createdAt, LocalDateTime updatedAt,
         List<Long> commentIds, List<Long> hashtagIds, int viewCount, int likeCount) {
         this.title = title;
         this.content = content;
         this.authorId = authorId;
-        this.authorNickname = authorNickname;
         this.thumbnailUrl = thumbnailUrl;
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();

@@ -44,11 +44,11 @@ public class PostDetailResponseDto {
     }
 
     public PostDetailResponseDto(Post post, List<CommentDto> commentDtos,
-        List<HashtagDto> hashtagDtos) {
+        List<HashtagDto> hashtagDtos, String authorNickname) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.content = convertMarkdownToHtml(post.getContent());
-        this.authorNickname = post.getAuthorNickname();
+        this.authorNickname = authorNickname;
         this.createdAt = post.getCreatedAt();
         this.updatedAt = post.getUpdatedAt();
         this.comments = commentDtos != null ? commentDtos : new ArrayList<>();
