@@ -98,14 +98,10 @@ public class PostServiceImpl implements PostService {
             .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
         Set<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
         Set<Long> hashtagIds = hashtags.stream().map(Hashtag::getId).collect(Collectors.toSet());
-        Long categoryId = requestDto.getCategoryId() != null
-            ? requestDto.getCategoryId()
+        Long categoryId = requestDto.getCategoryId() != null ? requestDto.getCategoryId()
             : categoryService.createOrUpdateDefaultCategory(memberId);
-
-
         // 썸네일 처리
         String thumbnailUrl = extractThumbnailUrl(requestDto.getContent());
-
         // Post 생성
         Post post = requestDto.toEntity(author.getId(), thumbnailUrl, hashtagIds, categoryId);
         postRepository.save(post);
@@ -183,20 +179,22 @@ public class PostServiceImpl implements PostService {
                         .set(redisKey, "true", VIEW_EXPIRATION_TIME, TimeUnit.SECONDS);
                     // 사용자 ID가 있는 경우 View 엔티티 처리
                     if (memberId != null) {
-                        Optional<View> existingView = viewRepository.findByMemberIdAndPostId(memberId, postId);
-
+                        Optional<View> existingView = viewRepository.findByMemberIdAndPostId(
+                            memberId, postId);
+                        View view;
                         if (existingView.isPresent()) {
                             // 존재하는 경우, 업데이트
-                            View view = existingView.get();
+                            view = existingView.get();
                             view.update(); // 업데이트 메서드를 호출
-                            viewRepository.save(view); // 엔티티를 저장
                         } else {
                             // 존재하지 않을 경우, 새로 생성 및 저장
-                            View view = View.builder()
-                                .memberId(memberId)
-                                .postId(postId)
-                                .build();
-                            viewRepository.save(view);
+                            view = View.builder().memberId(memberId).postId(postId).build();
+                        }
+                        viewRepository.save(view);
+                        List<View> recentViews = viewRepository.findTop10ByMemberIdOrderByUpdatedAtDesc(
+                            memberId);
+                        if (recentViews.size() > 10) {
+                            viewRepository.deleteAll(recentViews.subList(10, recentViews.size()));
                         }
                     }
                 }
