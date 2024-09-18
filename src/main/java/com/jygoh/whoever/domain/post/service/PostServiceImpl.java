@@ -23,7 +23,6 @@ import com.jygoh.whoever.domain.post.view.repository.ViewRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.commonmark.node.Node;
@@ -96,8 +95,8 @@ public class PostServiceImpl implements PostService {
         Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
         Member author = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
-        Set<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
-        Set<Long> hashtagIds = hashtags.stream().map(Hashtag::getId).collect(Collectors.toSet());
+        List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
+        List<Long> hashtagIds = hashtags.stream().map(Hashtag::getId).collect(Collectors.toList());
         Long categoryId = requestDto.getCategoryId() != null ? requestDto.getCategoryId()
             : categoryService.createOrUpdateDefaultCategory(memberId);
         // 썸네일 처리
@@ -116,8 +115,8 @@ public class PostServiceImpl implements PostService {
         if (!post.getAuthorId().equals(memberId)) {
             throw new AccessDeniedException("You do not have permission to edit this post.");
         }
-        Set<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
-        Set<Long> hashtagIds = hashtags.stream().map(Hashtag::getId).collect(Collectors.toSet());
+        List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
+        List<Long> hashtagIds = hashtags.stream().map(Hashtag::getId).collect(Collectors.toList());
         String thumbnailUrl = extractThumbnailUrl(post.getContent());
         Long categoryId = requestDto.getCategoryId() != null ? requestDto.getCategoryId()
             : categoryService.createOrUpdateDefaultCategory(memberId);
@@ -203,11 +202,11 @@ public class PostServiceImpl implements PostService {
                     .orElseThrow(() -> new IllegalArgumentException("Post not found"));
                 String authorNickname = memberRepository.findById(post.getAuthorId())
                     .map(Member::getNickname).orElse("Unknown");
-                Set<CommentDto> commentDtos = commentRepository.findByPostId(postId).stream()
+                List<CommentDto> commentDtos = commentRepository.findByPostId(postId).stream()
                     .map(comment -> new CommentDto(comment, memberRepository))
-                    .collect(Collectors.toSet());
-                Set<HashtagDto> hashtagDtos = hashtagRepository.findAllById(post.getHashtagIds())
-                    .stream().map(HashtagDto::new).collect(Collectors.toSet());
+                    .collect(Collectors.toList());
+                List<HashtagDto> hashtagDtos = hashtagRepository.findAllById(post.getHashtagIds())
+                    .stream().map(HashtagDto::new).collect(Collectors.toList());
                 return PostDetailResponseDto.builder().id(post.getId()).title(post.getTitle())
                     .content(post.getContent()).authorNickname(authorNickname)
                     .createdAt(post.getCreatedAt()).updatedAt(post.getUpdatedAt())

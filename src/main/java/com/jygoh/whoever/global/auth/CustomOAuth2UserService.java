@@ -33,8 +33,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             return memberRepository.save(existingMember);
         }).orElseGet(() -> {
             Member newMember = Member.builder().email(email).nickname(nickname)
-                .profileImageUrl(profileImageUrl).providers(Collections.singleton(oauthProvider))
-                .providerId(providerId).role(Role.MEMBER).build();
+                .profileImageUrl(profileImageUrl)
+                .providers(Collections.singletonList(oauthProvider)).providerId(providerId)
+                .role(Role.MEMBER).build();
             return memberRepository.save(newMember);
         });
         return new CustomUserDetail(oAuth2User, member.getId());

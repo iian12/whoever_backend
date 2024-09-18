@@ -8,8 +8,8 @@ import com.jygoh.whoever.domain.member.entity.Role;
 import com.jygoh.whoever.domain.member.profile.dto.MemberProfileResponseDto;
 import com.jygoh.whoever.domain.member.profile.dto.MemberProfileResponseDtoFactory;
 import com.jygoh.whoever.domain.member.repository.MemberRepository;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +56,7 @@ public class MemberServiceImpl implements MemberService {
         String profileImageUrl, String providerId) {
         // 새로운 Member 객체 생성
         Member newMember = Member.builder().email(email).nickname(name)  // nickname을 name으로 설정
-            .profileImageUrl(profileImageUrl).providers(Set.of(provider))
+            .profileImageUrl(profileImageUrl).providers(List.of(provider))
             .providerId(providerId) // providerId 설정
             .role(Role.MEMBER) // 기본 역할 설정
             .build();

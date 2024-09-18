@@ -10,8 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,7 +45,7 @@ public class Post {
     @ElementCollection
     @CollectionTable(name = "post_comments", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "comment_id")
-    private Set<Long> commentIds = new HashSet<>();
+    private List<Long> commentIds = new ArrayList<>();
 
     private int viewCount;
     private int commentCount;
@@ -54,22 +54,22 @@ public class Post {
     @ElementCollection
     @CollectionTable(name = "post_hashtags", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "hashtag_id")
-    private Set<Long> hashtagIds = new HashSet<>();
+    private List<Long> hashtagIds = new ArrayList<>();
 
     private Long categoryId;
 
     @Builder
-    public Post(String title, String content, Long authorId,
-        String thumbnailUrl, LocalDateTime createdAt, LocalDateTime updatedAt,
-        Set<Long> commentIds, Set<Long> hashtagIds, int viewCount, int likeCount, Long categoryId) {
+    public Post(String title, String content, Long authorId, String thumbnailUrl,
+        LocalDateTime createdAt, LocalDateTime updatedAt, List<Long> commentIds,
+        List<Long> hashtagIds, int viewCount, int likeCount, Long categoryId) {
         this.title = title;
         this.content = content;
         this.authorId = authorId;
         this.thumbnailUrl = thumbnailUrl;
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
-        this.commentIds = commentIds != null ? commentIds : new HashSet<>();
-        this.hashtagIds = hashtagIds != null ? hashtagIds : new HashSet<>();
+        this.commentIds = commentIds != null ? commentIds : new ArrayList<>();
+        this.hashtagIds = hashtagIds != null ? hashtagIds : new ArrayList<>();
         this.viewCount = viewCount;
         this.likeCount = likeCount;
         this.categoryId = categoryId;
@@ -95,8 +95,8 @@ public class Post {
         this.likeCount--;
     }
 
-    public void updatePost(String title, String content, String thumbnailUrl,
-        Set<Long> hashtagIds, Long categoryId) {
+    public void updatePost(String title, String content, String thumbnailUrl, List<Long> hashtagIds,
+        Long categoryId) {
         this.title = title;
         this.content = content;
         this.hashtagIds = hashtagIds;

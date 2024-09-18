@@ -11,8 +11,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,7 +39,7 @@ public class Member {
     @CollectionTable(name = "user_providers", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "provider")
-    private Set<Provider> providers = new HashSet<>();
+    private List<Provider> providers = new ArrayList<>();
 
     private String providerId;
 
@@ -49,12 +49,12 @@ public class Member {
     private int followerCount;
 
     @Builder(toBuilder = true)
-    public Member(String password, String email, String nickname, Set<Provider> providers,
+    public Member(String password, String email, String nickname, List<Provider> providers,
         String providerId, String profileImageUrl, Role role, int followerCount) {
         this.password = password;
         this.email = email;
         this.nickname = nickname;
-        this.providers = providers != null ? new HashSet<>(providers) : new HashSet<>();
+        this.providers = providers != null ? new ArrayList<>(providers) : new ArrayList<>();
         this.providerId = providerId;
         this.profileImageUrl = profileImageUrl;
         this.role = role;

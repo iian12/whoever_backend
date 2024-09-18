@@ -3,7 +3,6 @@ package com.jygoh.whoever.domain.hashtag.service;
 import com.jygoh.whoever.domain.hashtag.model.Hashtag;
 import com.jygoh.whoever.domain.hashtag.repository.HashtagRepository;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +24,7 @@ public class HashtagServiceImpl implements HashtagService {
     }
 
     @Override
-    public Set<Hashtag> findOrCreateHashtags(List<String> names) {
-        return names.stream().map(this::createOrGetHashtag).collect(Collectors.toSet());
+    public List<Hashtag> findOrCreateHashtags(List<String> names) {
+        return names.stream().map(this::createOrGetHashtag).collect(Collectors.toList());
     }
 }
