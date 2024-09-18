@@ -15,10 +15,14 @@ public class PostUpdateRequestDto {
 
     private List<String> hashtagNames;
 
+    private Long categoryId;
+
     @Builder
-    public PostUpdateRequestDto(String title, String content, List<String> hashtagNames) {
+    public PostUpdateRequestDto(String title, String content, List<String> hashtagNames,
+        Long categoryId) {
         this.title = title;
         this.content = content;
         this.hashtagNames = hashtagNames;
+        this.categoryId = categoryId;
     }
 }

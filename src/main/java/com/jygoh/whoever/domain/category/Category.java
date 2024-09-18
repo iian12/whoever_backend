@@ -1,12 +1,9 @@
 package com.jygoh.whoever.domain.category;
 
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,21 +22,24 @@ public class Category {
 
     private Long memberId;
 
-    @ElementCollection
-    private List<Long> postIds = new ArrayList<>();
+    private int postCount;
 
     @Builder
-    public Category(String name, Long memberId, List<Long> postIds) {
+    public Category(String name, Long memberId, int postCount) {
         this.name = name;
         this.memberId = memberId;
-        this.postIds = postIds;
+        this.postCount = postCount;
     }
 
-    public void addPost(Long postId) {
-        this.postIds.add(postId);
+    public void incrementPostCount() {
+        this.postCount++;
     }
 
-    public int getPostCount() {
-        return postIds.size();
+    public void decrementPostCount() {
+        this.postCount--;
+    }
+
+    public void updateName(String newName) {
+        this.name = newName;
     }
 }
