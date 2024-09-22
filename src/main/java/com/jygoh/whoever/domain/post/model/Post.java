@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +28,7 @@ public class Post {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
-    @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)
@@ -67,7 +65,6 @@ public class Post {
         this.authorId = authorId;
         this.thumbnailUrl = thumbnailUrl;
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
-        this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
         this.commentIds = commentIds != null ? commentIds : new ArrayList<>();
         this.hashtagIds = hashtagIds != null ? hashtagIds : new ArrayList<>();
         this.viewCount = viewCount;
