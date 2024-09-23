@@ -27,6 +27,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
+        String path = request.getRequestURI();
+        if (path.startsWith("/rss/")) {
+            filterChain.doFilter(request, response);  // 필터 통과 (바로 다음 필터로 이동)
+            return;
+        }
         // Request에서 JWT 토큰을 추출합니다.
         String token = resolveToken(request);
         if (token != null && jwtTokenProvider.validateToken(token)) {
@@ -35,8 +40,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             // 사용자 ID를 사용하여 UserDetails를 로드합니다.
             UserDetails userDetails = userDetailsService.loadUserById(memberId);
             // 인증 객체를 생성합니다.
-            UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
             // WebAuthenticationDetailsSource를 사용하여 인증 정보를 설정합니다.
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -49,7 +53,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private String resolveToken(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("accessToken".equals(cookie.getName())) {
