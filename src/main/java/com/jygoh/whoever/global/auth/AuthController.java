@@ -51,6 +51,7 @@ public class AuthController {
             refreshTokenCookie.setSecure(false); // HTTPS 환경에서만 사용 가능
             refreshTokenCookie.setPath("/"); // 전체 경로에서 사용 가능
             refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60 * 2); // 7일
+            response.addCookie(accessTokenCookie);
             response.addCookie(refreshTokenCookie);
             // 액세스 토큰을 JSON 응답으로 반환
             return ResponseEntity.ok("Login Success");
@@ -59,7 +60,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
-
 
     @PostMapping("/send-otp")
     public ResponseEntity<String> sendOtp(@RequestBody SendOtpRequestDto requestDto) {

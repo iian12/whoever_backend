@@ -25,16 +25,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String provider = userRequest.getClientRegistration().getRegistrationId();
         Provider oauthProvider = getProviderFromRegistrationId(provider);
         String email = getAttribute(oAuth2User, provider, "email");
-        String nickname = getAttribute(oAuth2User, provider, "name");
         String profileImageUrl = getAttribute(oAuth2User, provider, "picture");
         String providerId = getAttribute(oAuth2User, provider, "sub");
         Member member = memberRepository.findByEmail(email).map(existingMember -> {
             existingMember.addProvider(oauthProvider, providerId);
             return memberRepository.save(existingMember);
         }).orElseGet(() -> {
-            Member newMember = Member.builder().email(email).nickname(nickname)
-                .profileImageUrl(profileImageUrl).providers(Collections.singleton(oauthProvider))
-                .providerId(providerId).role(Role.MEMBER).build();
+            Member newMember = Member.builder().email(email)
+                .profileImageUrl(profileImageUrl)
+                .providers(Collections.singletonList(oauthProvider)).providerId(providerId)
+                .role(Role.MEMBER).build();
             return memberRepository.save(newMember);
         });
         return new CustomUserDetail(oAuth2User, member.getId());

@@ -2,7 +2,11 @@ package com.jygoh.whoever.domain.member.controller;
 
 import com.jygoh.whoever.domain.member.dto.MemberCreateRequestDto;
 import com.jygoh.whoever.domain.member.profile.dto.MemberProfileResponseDto;
+import com.jygoh.whoever.domain.member.profile.dto.NicknameRequestDto;
 import com.jygoh.whoever.domain.member.service.MemberService;
+import com.jygoh.whoever.global.auth.AuthenticationFacade;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberController {
 
     private final MemberService memberService;
+    private final AuthenticationFacade authenticationFacade;
 
-    public MemberController(MemberService memberService) {
+    public MemberController(MemberService memberService, AuthenticationFacade authenticationFacade) {
         this.memberService = memberService;
+        this.authenticationFacade = authenticationFacade;
     }
 
     @PostMapping("/register")
@@ -35,5 +41,12 @@ public class MemberController {
         @PathVariable String nickname) {
         MemberProfileResponseDto profile = memberService.getMemberProfileByNickname(nickname);
         return ResponseEntity.ok(profile);
+    }
+
+    @PostMapping("/set-nickname")
+    public ResponseEntity<String> setNickname(@RequestBody @Valid NicknameRequestDto requestDto, HttpServletRequest request) {
+        Long memberId = authenticationFacade.getCurrentMemberId();
+        memberService.setNickname(memberId, requestDto.getNickname());
+        return ResponseEntity.status(HttpStatus.OK).body("success");
     }
 }

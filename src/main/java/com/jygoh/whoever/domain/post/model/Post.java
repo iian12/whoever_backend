@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +28,11 @@ public class Post {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
-    @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)
     private Long authorId;
-
 
     private LocalDateTime createdAt;
 
@@ -44,8 +41,8 @@ public class Post {
     private String thumbnailUrl;
 
     @ElementCollection
-    @CollectionTable(name = "PostHashtags", joinColumns = @JoinColumn(name = "post_id"))
-    @Column(name = "hashtag_id")
+    @CollectionTable(name = "post_comments", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "comment_id")
     private List<Long> commentIds = new ArrayList<>();
 
     private int viewCount;
@@ -53,24 +50,26 @@ public class Post {
     private int likeCount;
 
     @ElementCollection
-    @CollectionTable(name = "PostHashtags", joinColumns = @JoinColumn(name = "post_id"))
+    @CollectionTable(name = "post_hashtags", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "hashtag_id")
     private List<Long> hashtagIds = new ArrayList<>();
 
+    private Long categoryId;
+
     @Builder
-    public Post(String title, String content, Long authorId,
-        String thumbnailUrl, LocalDateTime createdAt, LocalDateTime updatedAt,
-        List<Long> commentIds, List<Long> hashtagIds, int viewCount, int likeCount) {
+    public Post(String title, String content, Long authorId, String thumbnailUrl,
+        LocalDateTime createdAt, LocalDateTime updatedAt, List<Long> commentIds,
+        List<Long> hashtagIds, int viewCount, int likeCount, Long categoryId) {
         this.title = title;
         this.content = content;
         this.authorId = authorId;
         this.thumbnailUrl = thumbnailUrl;
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
-        this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
         this.commentIds = commentIds != null ? commentIds : new ArrayList<>();
         this.hashtagIds = hashtagIds != null ? hashtagIds : new ArrayList<>();
         this.viewCount = viewCount;
         this.likeCount = likeCount;
+        this.categoryId = categoryId;
     }
 
     public void incrementViewCount() {
@@ -93,12 +92,13 @@ public class Post {
         this.likeCount--;
     }
 
-    public void updatePost(String title, String content, String thumbnailUrl,
-        List<Long> hashtagIds) {
+    public void updatePost(String title, String content, String thumbnailUrl, List<Long> hashtagIds,
+        Long categoryId) {
         this.title = title;
         this.content = content;
         this.hashtagIds = hashtagIds;
         this.thumbnailUrl = thumbnailUrl;
         this.updatedAt = LocalDateTime.now(); // 수정 시간 업데이트
+        this.categoryId = categoryId;
     }
 }
