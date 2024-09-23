@@ -14,5 +14,6 @@ public interface MemberService {
 
     MemberProfileResponseDto getMemberProfileByNickname(String nickname);
 
+    void setNickname(Long memberId, String nickname);
 }
 

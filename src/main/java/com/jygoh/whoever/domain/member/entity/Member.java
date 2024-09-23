@@ -35,6 +35,8 @@ public class Member {
 
     private String profileImageUrl;
 
+    private boolean isSignUp;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_providers", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
@@ -49,11 +51,12 @@ public class Member {
     private int followerCount;
 
     @Builder(toBuilder = true)
-    public Member(String password, String email, String nickname, List<Provider> providers,
+    public Member(String password, String email, String nickname, boolean isSignUp, List<Provider> providers,
         String providerId, String profileImageUrl, Role role, int followerCount) {
         this.password = password;
         this.email = email;
         this.nickname = nickname;
+        this.isSignUp = isSignUp;
         this.providers = providers != null ? new ArrayList<>(providers) : new ArrayList<>();
         this.providerId = providerId;
         this.profileImageUrl = profileImageUrl;
@@ -93,5 +96,13 @@ public class Member {
         if (this.followerCount > 0) {
             this.followerCount--;
         }
+    }
+
+    public void completeSignUp() {
+        this.isSignUp = true;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

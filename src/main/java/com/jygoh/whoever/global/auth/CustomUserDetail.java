@@ -87,4 +87,8 @@ public class CustomUserDetail implements UserDetails, OAuth2User {
     public Member getMember() {
         return member;
     }
+
+    public boolean isSignUp() {
+        return member != null && member.isSignUp();
+    }
 }

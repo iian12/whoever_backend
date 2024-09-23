@@ -84,4 +84,17 @@ public class MemberServiceImpl implements MemberService {
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
         return memberProfileResponseDtoFactory.createFromMember(member);
     }
+
+    @Override
+    public void setNickname(Long memberId, String nickname) {
+        if (memberRepository.existsByNickname(nickname)) {
+            throw new IllegalArgumentException("Nickname is already in use.");
+        }
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        member.updateNickname(nickname);
+        member.completeSignUp();
+    }
 }
