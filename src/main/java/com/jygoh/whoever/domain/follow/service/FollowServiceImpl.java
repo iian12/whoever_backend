@@ -28,20 +28,15 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public void toggleFollow(String token, Long followeeId) {
         Long followerId = jwtTokenProvider.getMemberIdFromToken(token);
-        // Validate that a user cannot follow themselves
         if (followerId.equals(followeeId)) {
             throw new IllegalArgumentException("A user cannot follow themselves.");
         }
-        // Check if the follow relationship already exists
         Optional<Follow> existingFollow = followRepository.findById_FollowerIdAndId_FolloweeId(
             followerId, followeeId);
         if (existingFollow.isPresent()) {
-            // If follow relationship exists, delete it and decrease follower count
             followRepository.delete(existingFollow.get());
-            // Assuming `followeeId` refers to the followee's member ID
             memberRepository.findById(followeeId).ifPresent(Member::decreaseFollowerCount);
         } else {
-            // If follow relationship does not exist, create it and increase follower count
             Follow follow = Follow.builder().followerId(followerId).followeeId(followeeId)
                 .createdAt(LocalDateTime.now()).build();
             followRepository.save(follow);
