@@ -53,11 +53,23 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
         if (!comment.getAuthorId().equals(memberId)) {
-            throw new AccessDeniedException("You do not have permission to edit this post.");
+            throw new AccessDeniedException("You do not have permission to edit this comment.");
         }
         comment.updateComment(requestDto.getContent());
         commentRepository.save(comment);
         return comment.getId();
     }
+
+    @Override
+    public void deleteComment(Long commentId, String token) {
+        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Comment comment = commentRepository.findById(commentId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
+        if (!comment.getAuthorId().equals(memberId)) {
+            throw new AccessDeniedException("You do not have permission to delete this comment.");
+        }
+        commentRepository.delete(comment);
+    }
+
 
 }

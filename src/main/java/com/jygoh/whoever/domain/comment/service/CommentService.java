@@ -9,4 +9,5 @@ public interface CommentService {
 
     Long updateComment(Long commentId, CommentUpdateRequestDto requestDto, String token);
 
+    void deleteComment(Long commentId, String token);
 }
