@@ -7,8 +7,6 @@ import com.jygoh.whoever.domain.post.service.PostService;
 import com.jygoh.whoever.global.security.jwt.TokenUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/posts")
 public class PostController {
 
-    private static final Logger log = LoggerFactory.getLogger(PostController.class);
     private final PostService postService;
 
     public PostController(PostService postService) {
@@ -55,7 +52,6 @@ public class PostController {
         HttpServletRequest request) {
         try {
             String token = TokenUtils.extractTokenFromRequest(request);
-            log.info(token);
             PostDetailResponseDto postDetails = postService.getPostDetail(postId, token);
             return ResponseEntity.ok(postDetails);
         } catch (Exception e) {

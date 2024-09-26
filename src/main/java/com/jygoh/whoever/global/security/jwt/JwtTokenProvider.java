@@ -70,7 +70,6 @@ public class JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             if (token == null || token.isEmpty()) {
-                log.error("Token is null or empty");
                 return false;
             }
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);

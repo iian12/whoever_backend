@@ -6,4 +6,6 @@ import java.util.List;
 public interface RssFeedService {
 
     List<Post> getPostByMemberNickname(String nickname);
+
+
 }
