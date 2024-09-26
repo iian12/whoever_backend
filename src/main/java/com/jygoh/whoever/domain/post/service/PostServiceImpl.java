@@ -148,6 +148,17 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<PostListResponseDto> getPostsByCategory(Long categoryId) {
+        List<Post> posts = postRepository.findAllByCategoryId(categoryId);
+
+        return posts.stream().map(post -> {
+            String authorNickname = memberRepository.findById(post.getAuthorId())
+                .map(Member::getNickname).orElse("Unknown");
+            return PostListResponseDto.builder().post(post).authorNickname(authorNickname).build();
+        }).collect(Collectors.toList());
+    }
+
+    @Override
     public PostDetailResponseDto getPostDetail(Long postId, String token) {
         String redisKey = "postView:" + postId;
         Long memberId = null;

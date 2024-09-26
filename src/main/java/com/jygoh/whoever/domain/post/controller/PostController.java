@@ -3,6 +3,7 @@ package com.jygoh.whoever.domain.post.controller;
 import com.jygoh.whoever.domain.post.dto.PostCreateRequestDto;
 import com.jygoh.whoever.domain.post.dto.PostDetailResponseDto;
 import com.jygoh.whoever.domain.post.dto.PostListResponseDto;
+import com.jygoh.whoever.domain.post.dto.PostUpdateRequestDto;
 import com.jygoh.whoever.domain.post.service.PostService;
 import com.jygoh.whoever.global.security.jwt.TokenUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -64,5 +66,22 @@ public class PostController {
         String token = TokenUtils.extractTokenFromRequest(request);
         postService.toggleLike(postId, token);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{categoryId}")
+    public List<PostListResponseDto> getPostsByCategory(@PathVariable Long categoryId) {
+        return postService.getPostsByCategory(categoryId);
+    }
+    @PutMapping("/{postId}")
+    public ResponseEntity<Long> updatePost(@PathVariable Long postId, @RequestBody PostUpdateRequestDto requestDto, HttpServletRequest request) {
+        String token = TokenUtils.extractTokenFromRequest(request);
+        if (requestDto.getTitle() == null || requestDto.getTitle().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        if (requestDto.getContent() == null || requestDto.getContent().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        Long post = postService.updatePost(postId, requestDto, token);
+        return ResponseEntity.ok().body(post);
     }
 }
