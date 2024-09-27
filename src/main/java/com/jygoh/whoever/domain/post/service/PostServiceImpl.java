@@ -35,7 +35,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +48,6 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final HashtagService hashtagService;
     private final JwtTokenProvider jwtTokenProvider;
-    private final RedisTemplate<String, String> redisTemplate;
     private final MemberRepository memberRepository;
     private final ViewRepository viewRepository;
     private final PostLikeRepository postLikeRepository;
@@ -58,13 +56,12 @@ public class PostServiceImpl implements PostService {
     private final CategoryService categoryService;
 
     public PostServiceImpl(PostRepository postRepository, HashtagService hashtagService,
-        RedisTemplate<String, String> redisTemplate, JwtTokenProvider jwtTokenProvider,
-        MemberRepository memberRepository, ViewRepository viewRepository,
-        PostLikeRepository postLikeRepository, CommentRepository commentRepository,
-        HashtagRepository hashtagRepository, CategoryService categoryService) {
+        JwtTokenProvider jwtTokenProvider, MemberRepository memberRepository,
+        ViewRepository viewRepository, PostLikeRepository postLikeRepository,
+        CommentRepository commentRepository, HashtagRepository hashtagRepository,
+        CategoryService categoryService) {
         this.postRepository = postRepository;
         this.hashtagService = hashtagService;
-        this.redisTemplate = redisTemplate;
         this.jwtTokenProvider = jwtTokenProvider;
         this.memberRepository = memberRepository;
         this.viewRepository = viewRepository;
