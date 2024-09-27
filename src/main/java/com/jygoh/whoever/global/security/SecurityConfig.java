@@ -36,6 +36,7 @@ public class SecurityConfig {
                 authorizeRequests -> authorizeRequests.requestMatchers("/api/v1/auth/**").permitAll()
                     .requestMatchers("/api/v1/member/register").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/posts/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
                     .requestMatchers("/rss/**").permitAll().requestMatchers("/login/**").permitAll()
                     .anyRequest().authenticated())
             .oauth2Login(oauth2 -> oauth2.successHandler(customOAuth2SuccessHandler))

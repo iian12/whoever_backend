@@ -22,8 +22,8 @@ import com.jygoh.whoever.domain.post.view.repository.ViewRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -40,6 +40,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional
 public class PostServiceImpl implements PostService {
@@ -150,7 +151,6 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostListResponseDto> getPostsByCategory(Long categoryId) {
         List<Post> posts = postRepository.findAllByCategoryId(categoryId);
-
         return posts.stream().map(post -> {
             String authorNickname = memberRepository.findById(post.getAuthorId())
                 .map(Member::getNickname).orElse("Unknown");
@@ -160,66 +160,43 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDetailResponseDto getPostDetail(Long postId, String token) {
-        String redisKey = "postView:" + postId;
         Long memberId = null;
-        // 사용자 ID를 가져오는 로직을 수정하여 비로그인 사용자도 가능하게 처리
         if (token != null && !token.isEmpty()) {
-            try {
-                memberId = jwtTokenProvider.getMemberIdFromToken(token);
-                if (memberId != null) {
-                    redisKey += ":" + memberId;
-                }
-            } catch (Exception e) {
-                // 토큰 처리 오류 시 로그 남기고 무시 (비로그인 사용자를 허용)
-                e.getMessage();
-            }
+            memberId = jwtTokenProvider.getMemberIdFromToken(token);
         }
-        // Redis에서 조회 여부 확인
-        Boolean hasViewed = redisTemplate.hasKey(redisKey);
-        // 조회한 적이 없다면 조회수를 증가시키고 Redis에 키를 추가
-        if (Boolean.FALSE.equals(hasViewed)) {
-            Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-            // 조회수 증가
-            post.incrementViewCount();
-            postRepository.save(post);
-            // Redis에 키를 추가하고 일정 시간 후에 자동으로 만료되도록 설정
-            redisTemplate.opsForValue()
-                .set(redisKey, "true", VIEW_EXPIRATION_TIME, TimeUnit.SECONDS);
-            // 사용자 ID가 있는 경우에만 View 엔티티 처리
-            synchronized (this) {
-                if (memberId != null) {
-                    Optional<View> existingView = viewRepository.findByMemberIdAndPostId(memberId,
-                        postId);
-                    View view;
-                    if (existingView.isPresent()) {
-                        // 존재하는 경우, 업데이트
-                        view = existingView.get();
-                        view.update();
-                    } else {
-                        // 존재하지 않을 경우, 새로 생성 및 저장
-                        view = View.builder().memberId(memberId).postId(postId).build();
-                        viewRepository.save(view);
-                    }
-                }
+        Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        post.incrementViewCount();
+        postRepository.save(post);
+        if (memberId != null) {
+            Optional<View> existingView = viewRepository.findByMemberIdAndPostId(memberId, postId);
+            View view;
+            if (existingView.isPresent()) {
+                view = existingView.get();
+                view.update();
+            } else {
+                view = View.builder().memberId(memberId).postId(postId).build();
+                viewRepository.save(view);
             }
         }
         // 포스트, 댓글 및 해시태그 정보를 조회
-        Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         String authorNickname = memberRepository.findById(post.getAuthorId())
             .map(Member::getNickname).orElse("Unknown");
         List<CommentDto> commentDtos = commentRepository.findByPostId(postId).stream()
             .map(comment -> new CommentDto(comment, memberRepository)).collect(Collectors.toList());
         List<HashtagDto> hashtagDtos = hashtagRepository.findAllById(post.getHashtagIds()).stream()
             .map(HashtagDto::new).collect(Collectors.toList());
+        boolean existLike = false;
+        if (memberId != null) {
+            existLike = postLikeRepository.existsByPostIdAndMemberId(postId, memberId);
+            log.info(String.valueOf(existLike));
+        }
         return PostDetailResponseDto.builder().id(post.getId()).title(post.getTitle())
             .content(post.getContent()).authorNickname(authorNickname)
             .createdAt(post.getCreatedAt()).updatedAt(post.getUpdatedAt()).comments(commentDtos)
-            .hashtags(hashtagDtos).viewCount(post.getViewCount())
-            .commentCount(post.getCommentCount()).build();
+            .hashtags(hashtagDtos).likeCount(post.getLikeCount()).isLiked(existLike)
+            .viewCount(post.getViewCount()).commentCount(post.getCommentCount()).build();
     }
-
 
     @Override
     public void toggleLike(Long postId, String token) {

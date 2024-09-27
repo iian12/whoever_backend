@@ -68,10 +68,11 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{categoryId}")
+    @GetMapping("/category/{categoryId}")
     public List<PostListResponseDto> getPostsByCategory(@PathVariable Long categoryId) {
         return postService.getPostsByCategory(categoryId);
     }
+
     @PutMapping("/{postId}")
     public ResponseEntity<Long> updatePost(@PathVariable Long postId, @RequestBody PostUpdateRequestDto requestDto, HttpServletRequest request) {
         String token = TokenUtils.extractTokenFromRequest(request);

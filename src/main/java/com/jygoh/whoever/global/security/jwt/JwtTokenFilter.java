@@ -28,7 +28,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
-        if (path.startsWith("/rss/")) {
+        if (path.startsWith("/rss/") || path.startsWith("/posts/category") || path.startsWith("/images")) {
             filterChain.doFilter(request, response);  // 필터 통과 (바로 다음 필터로 이동)
             return;
         }
