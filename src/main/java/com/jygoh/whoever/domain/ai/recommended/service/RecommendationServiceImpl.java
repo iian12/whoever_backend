@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RecommendationServiceImpl implements RecommendationService {
 
     @Override
-    public String getRecommendedPosts(String memberId) {
+    public String getRecommendedPosts(String userId) {
         return "";
     }
 

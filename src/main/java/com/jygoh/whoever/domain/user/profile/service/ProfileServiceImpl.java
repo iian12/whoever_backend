@@ -42,17 +42,17 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public MyBasicInfoResponseDto getMyProfile(String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
         // 사용자 기본 정보를 조회
-        Users users = userRepository.findById(memberId)
+        Users users = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("Member not found"));
         return MyBasicInfoResponseDto.builder().email(users.getEmail())
             .nickname(users.getNickname()).profileImageUrl(users.getProfileImageUrl())
-            .following(getFollowingList(memberId)).followerCount(users.getFollowerCount()).build();
+            .following(getFollowingList(userId)).followerCount(users.getFollowerCount()).build();
     }
 
-    private List<FollowResponseDto> getFollowingList(Long memberId) {
-        return followRepository.findById_FollowerId(memberId).stream().map(follow -> {
+    private List<FollowResponseDto> getFollowingList(Long userId) {
+        return followRepository.findById_FollowerId(userId).stream().map(follow -> {
             Users followee = userRepository.findById(follow.getFolloweeId())
                 .orElseThrow(() -> new IllegalArgumentException("Followee not found"));
             return new FollowResponseDto(followee.getId(), followee.getNickname());
@@ -61,9 +61,9 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public MyPostsResponseDto getMyPosts(String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
         List<MyPostsResponseDto.PostForProfileDto> posts = postRepository.findAllByAuthorId(
-            memberId).stream().map(
+            userId).stream().map(
             post -> new MyPostsResponseDto.PostForProfileDto(post.getId(), post.getTitle(),
                 post.getContent())).collect(Collectors.toList());
         return MyPostsResponseDto.builder().posts(posts).build();
@@ -71,9 +71,9 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public MyCommentsResponseDto getMyComments(String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
         List<MyCommentsResponseDto.CommentForProfileDto> comments = commentRepository.findByAuthorId(
-                memberId).stream().map(
+                userId).stream().map(
                 comment -> new MyCommentsResponseDto.CommentForProfileDto(comment.getId(),
                     comment.getContent(),
                     new MyCommentsResponseDto.CommentForProfileDto.PostForCommentDto(
@@ -84,9 +84,9 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public MyLikedPostsResponseDto getMyLikedPosts(String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
-        List<MyLikedPostsResponseDto.PostForProfileDto> likedPosts = postLikeRepository.findByMemberId(
-            memberId).stream().map(like -> {
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        List<MyLikedPostsResponseDto.PostForProfileDto> likedPosts = postLikeRepository.findByUserId(
+            userId).stream().map(like -> {
             Post post = postRepository.findById(like.getPostId())
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
             return new MyLikedPostsResponseDto.PostForProfileDto(post.getId(), post.getTitle(),

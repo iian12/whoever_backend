@@ -18,17 +18,17 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long memberId;
+    private Long userId;
 
     private String token;
 
     @Builder
-    public RefreshToken(Long memberId, String token) {
-        this.memberId = memberId;
+    public RefreshToken(Long userId, String token) {
+        this.userId = userId;
         this.token = token;
     }
 
     public RefreshToken updateToken(String newToken) {
-        return RefreshToken.builder().memberId(this.memberId).token(newToken).build();
+        return RefreshToken.builder().userId(this.userId).token(newToken).build();
     }
 }

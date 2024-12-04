@@ -86,13 +86,13 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Long createPost(PostCreateRequestDto requestDto, String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
-        Users author = userRepository.findById(memberId)
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        Users author = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
         List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
         List<Long> hashtagIds = hashtags.stream().map(Hashtag::getId).collect(Collectors.toList());
         Long categoryId = requestDto.getCategoryId() != null ? requestDto.getCategoryId()
-            : categoryService.createOrUpdateDefaultCategory(memberId);
+            : categoryService.createOrUpdateDefaultCategory(userId);
         // 썸네일 처리
         String thumbnailUrl = extractThumbnailUrl(requestDto.getContent());
         // Post 생성
@@ -103,17 +103,17 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Long updatePost(Long postId, PostUpdateRequestDto requestDto, String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-        if (!post.getAuthorId().equals(memberId)) {
+        if (!post.getAuthorId().equals(userId)) {
             throw new AccessDeniedException("You do not have permission to edit this post.");
         }
         List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
         List<Long> hashtagIds = hashtags.stream().map(Hashtag::getId).collect(Collectors.toList());
         String thumbnailUrl = extractThumbnailUrl(post.getContent());
         Long categoryId = requestDto.getCategoryId() != null ? requestDto.getCategoryId()
-            : categoryService.createOrUpdateDefaultCategory(memberId);
+            : categoryService.createOrUpdateDefaultCategory(userId);
         post.updatePost(requestDto.getTitle(), requestDto.getContent(), thumbnailUrl, hashtagIds,
             categoryId);
         postRepository.save(post);
@@ -122,10 +122,10 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deletePost(Long postId, String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-        if (!post.getAuthorId().equals(memberId)) {
+        if (!post.getAuthorId().equals(userId)) {
             throw new AccessDeniedException("You do not have permission to edit this post.");
         }
         postRepository.delete(post);
@@ -180,7 +180,7 @@ public class PostServiceImpl implements PostService {
             .map(HashtagDto::new).collect(Collectors.toList());
         boolean existLike = false;
         if (userId != null) {
-            existLike = postLikeRepository.existsByPostIdAndMemberId(postId, userId);
+            existLike = postLikeRepository.existsByPostIdAndUserId(postId, userId);
             log.info(String.valueOf(existLike));
         }
         return PostDetailResponseDto.builder().id(post.getId()).title(post.getTitle())
@@ -194,9 +194,9 @@ public class PostServiceImpl implements PostService {
     public void toggleLike(Long postId, String token) {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
-        Optional<PostLike> existingLike = postLikeRepository.findByPostIdAndMemberId(postId,
-            memberId);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        Optional<PostLike> existingLike = postLikeRepository.findByPostIdAndUserId(postId,
+            userId);
         if (existingLike.isPresent()) {
             post.decrementLikeCount();
             postRepository.save(post);
@@ -204,7 +204,7 @@ public class PostServiceImpl implements PostService {
         } else {
             post.incrementLikeCount();
             postRepository.save(post);
-            PostLike postLike = PostLike.builder().postId(postId).userId(memberId).build();
+            PostLike postLike = PostLike.builder().postId(postId).userId(userId).build();
             postLikeRepository.save(postLike);
         }
     }
