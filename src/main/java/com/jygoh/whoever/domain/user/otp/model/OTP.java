@@ -1,13 +1,9 @@
 package com.jygoh.whoever.domain.user.otp.model;
 
-import com.jygoh.whoever.domain.user.entity.Users;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,17 +18,15 @@ public class OTP {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Users users;
+    Long userId;
 
     private String otp;
 
     private LocalDateTime expiryTime;
 
     @Builder
-    public OTP(Users users, String otp, LocalDateTime expiryTime) {
-        this.users = users;
+    public OTP(Long userId, String otp, LocalDateTime expiryTime) {
+        this.userId = userId;
         this.otp = otp;
         this.expiryTime = expiryTime;
     }
