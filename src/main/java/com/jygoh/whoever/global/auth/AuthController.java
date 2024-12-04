@@ -1,10 +1,10 @@
 package com.jygoh.whoever.global.auth;
 
-import com.jygoh.whoever.domain.member.dto.MemberLoginRequestDto;
-import com.jygoh.whoever.domain.member.otp.service.OtpVerifyRequestDto;
-import com.jygoh.whoever.domain.member.otp.service.PasswordResetRequestDto;
-import com.jygoh.whoever.domain.member.otp.service.PasswordResetService;
-import com.jygoh.whoever.domain.member.otp.service.SendOtpRequestDto;
+import com.jygoh.whoever.domain.user.dto.UserLoginReqDto;
+import com.jygoh.whoever.domain.user.otp.service.OtpVerifyRequestDto;
+import com.jygoh.whoever.domain.user.otp.service.PasswordResetRequestDto;
+import com.jygoh.whoever.domain.user.otp.service.PasswordResetService;
+import com.jygoh.whoever.domain.user.otp.service.SendOtpRequestDto;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import com.jygoh.whoever.global.security.jwt.TokenResponseDto;
 import jakarta.servlet.http.Cookie;
@@ -35,7 +35,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody MemberLoginRequestDto requestDto,
+    public ResponseEntity<String> login(@RequestBody UserLoginReqDto requestDto,
         HttpServletResponse response) {
         try {
             TokenResponseDto tokenResponse = authService.login(requestDto);

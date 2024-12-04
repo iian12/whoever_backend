@@ -14,6 +14,9 @@ public class PostListResponseDto {
     private String title;
     private String authorNickname;
     private String thumbnailUrl;
+    private int likeCount;
+    private int commentCount;
+    private int viewCount;
     private LocalDateTime createdAt;
 
     @Builder
@@ -22,6 +25,9 @@ public class PostListResponseDto {
         this.title = post.getTitle();
         this.authorNickname = authorNickname;
         this.thumbnailUrl = post.getThumbnailUrl();
+        this.likeCount = post.getLikeCount();
+        this.commentCount = post.getCommentCount();
+        this.viewCount = post.getViewCount();
         this.createdAt = post.getCreatedAt();
     }
 }

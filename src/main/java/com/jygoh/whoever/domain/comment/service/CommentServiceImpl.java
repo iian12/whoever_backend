@@ -4,8 +4,8 @@ import com.jygoh.whoever.domain.comment.dto.CommentCreateRequestDto;
 import com.jygoh.whoever.domain.comment.dto.CommentUpdateRequestDto;
 import com.jygoh.whoever.domain.comment.model.Comment;
 import com.jygoh.whoever.domain.comment.repository.CommentRepository;
-import com.jygoh.whoever.domain.member.entity.Member;
-import com.jygoh.whoever.domain.member.repository.MemberRepository;
+import com.jygoh.whoever.domain.user.entity.Users;
+import com.jygoh.whoever.domain.user.repository.UserRepository;
 import com.jygoh.whoever.domain.post.model.Post;
 import com.jygoh.whoever.domain.post.repository.PostRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
@@ -20,20 +20,20 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
 
     public CommentServiceImpl(CommentRepository commentRepository, PostRepository postRepository,
-        JwtTokenProvider jwtTokenProvider, MemberRepository memberRepository) {
+        JwtTokenProvider jwtTokenProvider, UserRepository userRepository) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.memberRepository = memberRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public Long createComment(CommentCreateRequestDto requestDto, String token) {
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-        Member author = memberRepository.findById(memberId)
+        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Users author = userRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
         Post post = postRepository.findById(requestDto.getPostId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid post ID"));
@@ -49,15 +49,27 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Long updateComment(Long commentId, CommentUpdateRequestDto requestDto, String token) {
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
         if (!comment.getAuthorId().equals(memberId)) {
-            throw new AccessDeniedException("You do not have permission to edit this post.");
+            throw new AccessDeniedException("You do not have permission to edit this comment.");
         }
         comment.updateComment(requestDto.getContent());
         commentRepository.save(comment);
         return comment.getId();
     }
+
+    @Override
+    public void deleteComment(Long commentId, String token) {
+        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Comment comment = commentRepository.findById(commentId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
+        if (!comment.getAuthorId().equals(memberId)) {
+            throw new AccessDeniedException("You do not have permission to delete this comment.");
+        }
+        commentRepository.delete(comment);
+    }
+
 
 }

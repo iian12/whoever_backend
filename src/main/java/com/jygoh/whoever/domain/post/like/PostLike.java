@@ -19,12 +19,12 @@ public class PostLike {
     private Long postId;
 
     @Id
-    private Long memberId;
+    private Long userId;
 
     @Builder
-    public PostLike(Long postId, Long memberId) {
+    public PostLike(Long postId, Long userId) {
         this.postId = postId;
-        this.memberId = memberId;
+        this.userId = userId;
     }
 
     @Override
@@ -36,12 +36,12 @@ public class PostLike {
             return false;
         }
         PostLike postLike = (PostLike) o;
-        return postId.equals(postLike.postId) && memberId.equals(postLike.memberId);
+        return postId.equals(postLike.postId) && userId.equals(postLike.userId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(postId, memberId);
+        return Objects.hash(postId, userId);
     }
 
 }

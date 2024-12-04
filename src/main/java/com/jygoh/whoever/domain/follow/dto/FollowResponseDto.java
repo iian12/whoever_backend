@@ -1,6 +1,6 @@
 package com.jygoh.whoever.domain.follow.dto;
 
-import com.jygoh.whoever.domain.member.entity.Member;
+import com.jygoh.whoever.domain.user.entity.Users;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,8 +17,8 @@ public class FollowResponseDto {
         this.nickname = nickname;
     }
 
-    public FollowResponseDto(Member member) {
-        this.id = member.getId();
-        this.nickname = member.getNickname();
+    public FollowResponseDto(Users users) {
+        this.id = users.getId();
+        this.nickname = users.getNickname();
     }
 }

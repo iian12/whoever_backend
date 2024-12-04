@@ -23,7 +23,8 @@ public class SecurityConfig {
 
 
     public SecurityConfig(JwtTokenProvider jwtTokenProvider,
-        CustomUserDetailsService userDetailsService, CustomOAuth2SuccessHandler customOAuth2SuccessHandler) {
+        CustomUserDetailsService userDetailsService,
+        CustomOAuth2SuccessHandler customOAuth2SuccessHandler) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = userDetailsService;
         this.customOAuth2SuccessHandler = customOAuth2SuccessHandler;
@@ -31,21 +32,15 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(authorizeRequests ->
-                authorizeRequests
-                    .requestMatchers("/api/v1/auth/**").permitAll()
+        http.csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(
+                authorizeRequests -> authorizeRequests.requestMatchers("/api/v1/auth/**").permitAll()
                     .requestMatchers("/api/v1/member/register").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/posts/**").permitAll()
-                    .requestMatchers("/login/**").permitAll()
-                    .anyRequest().authenticated()
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .successHandler(customOAuth2SuccessHandler)
-            )
+                    .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
+                    .requestMatchers("/rss/**").permitAll().requestMatchers("/login/**").permitAll()
+                    .anyRequest().authenticated())
+            .oauth2Login(oauth2 -> oauth2.successHandler(customOAuth2SuccessHandler))
             .addFilterAfter(jwtTokenFilter(), OAuth2LoginAuthenticationFilter.class);
-
         return http.build();
     }
 

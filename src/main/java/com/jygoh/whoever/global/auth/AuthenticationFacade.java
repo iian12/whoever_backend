@@ -10,6 +10,6 @@ public class AuthenticationFacade {
     public Long getCurrentMemberId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
-        return userDetail.getMemberId();
+        return userDetail.getUserId();
     }
 }

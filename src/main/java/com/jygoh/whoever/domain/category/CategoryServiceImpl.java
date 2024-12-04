@@ -21,7 +21,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponseDto> getCategoriesForMember(String token) {
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
         List<Category> categories = categoryRepository.findByMemberId(memberId);
         return categories.stream()
             .map(CategoryResponseDto::fromEntity)
@@ -29,12 +29,12 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Long createOrUpdateDefaultCategory(Long memberId) {
-        Category defaultCategory = categoryRepository.findByMemberIdAndName(memberId, "없음")
+    public Long createOrUpdateDefaultCategory(Long userId) {
+        Category defaultCategory = categoryRepository.findByMemberIdAndName(userId, "없음")
             .orElseGet(() -> {
                 Category newCategory = Category.builder()
                     .name("없음")
-                    .memberId(memberId)
+                    .userId(userId)
                     .postCount(0)
                     .build();
                 return categoryRepository.save(newCategory);
@@ -45,14 +45,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Long createCategory(String token, String categoryName) {
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
         // 카테고리 이름이 유효한지 확인
         if (categoryName == null || categoryName.trim().isEmpty()) {
             throw new IllegalArgumentException("Category name cannot be empty.");
         }
 
         // 같은 이름의 카테고리가 이미 존재하는지 확인
-        Category existingCategory = categoryRepository.findByMemberIdAndName(memberId, categoryName)
+        Category existingCategory = categoryRepository.findByMemberIdAndName(userId, categoryName)
             .orElse(null);
         if (existingCategory != null) {
             return existingCategory.getId();
@@ -61,7 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
         // 새 카테고리 생성
         Category newCategory = Category.builder()
             .name(categoryName)
-            .memberId(memberId)
+            .userId(userId)
             .postCount(0)
             .build();
 

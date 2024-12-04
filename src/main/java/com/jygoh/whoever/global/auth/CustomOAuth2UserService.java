@@ -1,9 +1,9 @@
 package com.jygoh.whoever.global.auth;
 
-import com.jygoh.whoever.domain.member.entity.Member;
-import com.jygoh.whoever.domain.member.entity.Provider;
-import com.jygoh.whoever.domain.member.entity.Role;
-import com.jygoh.whoever.domain.member.repository.MemberRepository;
+import com.jygoh.whoever.domain.user.entity.Users;
+import com.jygoh.whoever.domain.user.entity.Provider;
+import com.jygoh.whoever.domain.user.entity.Role;
+import com.jygoh.whoever.domain.user.repository.UserRepository;
 import java.util.Collections;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
 
-    public CustomOAuth2UserService(MemberRepository memberRepository) {
-        this.memberRepository = memberRepository;
+    public CustomOAuth2UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -27,17 +27,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = getAttribute(oAuth2User, provider, "email");
         String profileImageUrl = getAttribute(oAuth2User, provider, "picture");
         String providerId = getAttribute(oAuth2User, provider, "sub");
-        Member member = memberRepository.findByEmail(email).map(existingMember -> {
+        Users users = userRepository.findByEmail(email).map(existingMember -> {
             existingMember.addProvider(oauthProvider, providerId);
-            return memberRepository.save(existingMember);
+            return userRepository.save(existingMember);
         }).orElseGet(() -> {
-            Member newMember = Member.builder().email(email)
+            Users newUsers = Users.builder().email(email)
                 .profileImageUrl(profileImageUrl)
                 .providers(Collections.singletonList(oauthProvider)).providerId(providerId)
                 .role(Role.MEMBER).build();
-            return memberRepository.save(newMember);
+            return userRepository.save(newUsers);
         });
-        return new CustomUserDetail(oAuth2User, member.getId());
+        return new CustomUserDetail(oAuth2User, users.getId());
     }
 
     private String getAttribute(OAuth2User oAuth2User, String provider, String attributeName) {

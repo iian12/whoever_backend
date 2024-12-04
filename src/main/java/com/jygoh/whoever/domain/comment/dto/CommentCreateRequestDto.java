@@ -1,7 +1,7 @@
 package com.jygoh.whoever.domain.comment.dto;
 
 import com.jygoh.whoever.domain.comment.model.Comment;
-import com.jygoh.whoever.domain.member.entity.Member;
+import com.jygoh.whoever.domain.user.entity.Users;
 import com.jygoh.whoever.domain.post.model.Post;
 import java.time.LocalDateTime;
 import lombok.Builder;
@@ -32,7 +32,7 @@ public class CommentCreateRequestDto {
         this.parentCommentId = parentCommentId;
     }
 
-    public Comment toEntity(Post post, Member author) {
+    public Comment toEntity(Post post, Users author) {
         return Comment.builder().postId(post.getId()).authorId(author.getId())
             .content(this.content)
             .parentCommentId(this.parentCommentId).createdAt(LocalDateTime.now()).isUpdated(false)

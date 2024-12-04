@@ -1,13 +1,11 @@
 package com.jygoh.whoever.domain.post.model;
 
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +39,6 @@ public class Post {
     private String thumbnailUrl;
 
     @ElementCollection
-    @CollectionTable(name = "post_comments", joinColumns = @JoinColumn(name = "post_id"))
-    @Column(name = "comment_id")
     private List<Long> commentIds = new ArrayList<>();
 
     private int viewCount;
@@ -50,8 +46,6 @@ public class Post {
     private int likeCount;
 
     @ElementCollection
-    @CollectionTable(name = "post_hashtags", joinColumns = @JoinColumn(name = "post_id"))
-    @Column(name = "hashtag_id")
     private List<Long> hashtagIds = new ArrayList<>();
 
     private Long categoryId;

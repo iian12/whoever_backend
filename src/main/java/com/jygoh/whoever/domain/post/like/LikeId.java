@@ -5,6 +5,6 @@ import java.io.Serializable;
 public class LikeId implements Serializable {
 
     private Long postId;
-    private Long memberId;
+    private Long userId;
 
 }

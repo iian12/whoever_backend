@@ -24,13 +24,15 @@ public class PostDetailResponseDto {
     private LocalDateTime updatedAt;
     private List<CommentDto> comments;
     private List<HashtagDto> hashtags;
+    private int likeCount;
+    private boolean isLiked;
     private int viewCount;
     private int commentCount;
 
     @Builder
     public PostDetailResponseDto(Long id, String title, String content, String authorNickname,
         LocalDateTime createdAt, LocalDateTime updatedAt, List<CommentDto> comments,
-        List<HashtagDto> hashtags, int viewCount, int commentCount) {
+        List<HashtagDto> hashtags, int likeCount, boolean isLiked, int viewCount, int commentCount) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -39,6 +41,8 @@ public class PostDetailResponseDto {
         this.updatedAt = updatedAt;
         this.comments = comments;
         this.hashtags = hashtags;
+        this.likeCount = likeCount;
+        this.isLiked = isLiked;
         this.viewCount = viewCount;
         this.commentCount = commentCount;
     }
@@ -53,6 +57,8 @@ public class PostDetailResponseDto {
         this.updatedAt = post.getUpdatedAt();
         this.comments = commentDtos != null ? commentDtos : new ArrayList<>();
         this.hashtags = hashtagDtos != null ? hashtagDtos : new ArrayList<>();
+        this.likeCount = post.getLikeCount();
+        this.isLiked = false;
         this.viewCount = post.getViewCount();
         this.commentCount = post.getCommentCount();
     }

@@ -1,13 +1,11 @@
 package com.jygoh.whoever.domain.comment.model;
 
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,7 +37,6 @@ public class Comment {
     private Long parentCommentId; // 부모 댓글 ID
 
     @ElementCollection
-    @CollectionTable(name = "CommentReplies", joinColumns = @JoinColumn(name = "comment_id"))
     @Column(name = "reply_id")
     private List<Long> replyIds = new ArrayList<>();
 
