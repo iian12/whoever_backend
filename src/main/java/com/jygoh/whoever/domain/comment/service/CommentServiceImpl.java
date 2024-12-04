@@ -32,8 +32,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Long createComment(CommentCreateRequestDto requestDto, String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
-        Users author = userRepository.findById(memberId)
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        Users author = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
         Post post = postRepository.findById(requestDto.getPostId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid post ID"));
@@ -49,10 +49,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Long updateComment(Long commentId, CommentUpdateRequestDto requestDto, String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
-        if (!comment.getAuthorId().equals(memberId)) {
+        if (!comment.getAuthorId().equals(userId)) {
             throw new AccessDeniedException("You do not have permission to edit this comment.");
         }
         comment.updateComment(requestDto.getContent());
@@ -62,10 +62,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void deleteComment(Long commentId, String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
-        if (!comment.getAuthorId().equals(memberId)) {
+        if (!comment.getAuthorId().equals(userId)) {
             throw new AccessDeniedException("You do not have permission to delete this comment.");
         }
         commentRepository.delete(comment);

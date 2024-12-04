@@ -31,10 +31,10 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     @Override
     public void sendOtp(SendOtpRequestDto requestDto) {
         String email = requestDto.getEmail();
-        Users users = userRepository.findByEmail(email)
+        Users user = userRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("Member not found."));
         String otpCode = generateOtpCode();
-        OTP otpEntity = OTP.builder().users(users).otp(otpCode)
+        OTP otpEntity = OTP.builder().userId(user.getId()).otp(otpCode)
             .expiryTime(LocalDateTime.now().plusMinutes(10)).build();
         otpRepository.save(otpEntity);
         emailService.sendEmail(email, "Password Reset OTP", "Your OTP is: " + otpCode);
@@ -44,9 +44,9 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     public boolean verifyOtp(OtpVerifyRequestDto requestDto) {
         String email = requestDto.getEmail();
         String otp = requestDto.getOtp();
-        Users users = userRepository.findByEmail(email)
+        Users user = userRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("Member not found."));
-        OTP otpEntity = otpRepository.findByMemberAndOtp(users, otp)
+        OTP otpEntity = otpRepository.findByUserIdAndOtp(user.getId(), otp)
             .orElseThrow(() -> new IllegalArgumentException("Invalid OTP"));
         if (otpEntity.isExpired()) {
             throw new IllegalArgumentException("OTP has expired");
@@ -56,10 +56,10 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     public void resetPassword(PasswordResetRequestDto requestDto) {
-        Users users = userRepository.findByEmail(requestDto.getEmail())
+        Users user = userRepository.findByEmail(requestDto.getEmail())
             .orElseThrow(() -> new IllegalArgumentException("Member not found."));
-        users.updatePassword(bcryptPasswordEncoder.encode(requestDto.getNewPassword()));
-        userRepository.save(users);
+        user.updatePassword(bcryptPasswordEncoder.encode(requestDto.getNewPassword()));
+        userRepository.save(user);
     }
 
     private String generateOtpCode() {

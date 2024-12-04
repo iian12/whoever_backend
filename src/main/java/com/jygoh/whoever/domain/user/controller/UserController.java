@@ -32,8 +32,8 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<Long> register(@RequestBody UserCreateReqDto requestDto) {
-        Long memberId = usersService.registerUser(requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(memberId);
+        Long userId = usersService.registerUser(requestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userId);
     }
 
     @GetMapping("/profile/{nickname}")
@@ -45,8 +45,8 @@ public class UserController {
 
     @PostMapping("/set-nickname")
     public ResponseEntity<String> setNickname(@RequestBody @Valid NicknameRequestDto requestDto, HttpServletRequest request) {
-        Long memberId = authenticationFacade.getCurrentMemberId();
-        usersService.setNickname(memberId, requestDto.getNickname());
+        Long userId = authenticationFacade.getCurrentUserId();
+        usersService.setNickname(userId, requestDto.getNickname());
         return ResponseEntity.status(HttpStatus.OK).body("success");
     }
 }

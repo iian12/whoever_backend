@@ -65,14 +65,14 @@ public class AuthServiceImpl implements AuthService {
         if (!jwtTokenProvider.validateToken(refreshToken)) {
             throw new IllegalArgumentException("Invalid refresh token");
         }
-        Long memberId = jwtTokenProvider.getUserIdFromToken(refreshToken);
-        RefreshToken existingRefreshToken = refreshTokenRepository.findByMemberId(memberId)
+        Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+        RefreshToken existingRefreshToken = refreshTokenRepository.findByUserId(userId)
             .orElseThrow(
                 () -> new IllegalArgumentException("Refresh token does not exist or is invalid"));
         if (!existingRefreshToken.getToken().equals(refreshToken)) {
             throw new IllegalArgumentException("Refresh token does not match");
         }
-        String newAccessToken = jwtTokenProvider.createAccessToken(memberId);
+        String newAccessToken = jwtTokenProvider.createAccessToken(userId);
         // TokenResponseDto 객체 생성
         return TokenResponseDto.builder().accessToken(newAccessToken).build();
     }

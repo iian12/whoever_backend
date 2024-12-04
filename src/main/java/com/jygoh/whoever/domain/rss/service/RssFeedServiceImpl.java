@@ -21,8 +21,8 @@ public class RssFeedServiceImpl implements RssFeedService {
 
     @Override
     public List<Post> getPostByMemberNickname(String nickname) {
-        Long memberId = userRepository.findByNickname(nickname)
+        Long userId = userRepository.findByNickname(nickname)
             .orElseThrow(() -> new IllegalArgumentException("Member not Found")).getId();
-        return postRepository.findAllByAuthorId(memberId);
+        return postRepository.findAllByAuthorId(userId);
     }
 }

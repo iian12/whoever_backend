@@ -21,8 +21,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponseDto> getCategoriesForMember(String token) {
-        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
-        List<Category> categories = categoryRepository.findByMemberId(memberId);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        List<Category> categories = categoryRepository.findByUserId(userId);
         return categories.stream()
             .map(CategoryResponseDto::fromEntity)
             .collect(Collectors.toList());
@@ -30,7 +30,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Long createOrUpdateDefaultCategory(Long userId) {
-        Category defaultCategory = categoryRepository.findByMemberIdAndName(userId, "없음")
+        Category defaultCategory = categoryRepository.findByUserIdAndName(userId, "없음")
             .orElseGet(() -> {
                 Category newCategory = Category.builder()
                     .name("없음")
@@ -52,7 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         // 같은 이름의 카테고리가 이미 존재하는지 확인
-        Category existingCategory = categoryRepository.findByMemberIdAndName(userId, categoryName)
+        Category existingCategory = categoryRepository.findByUserIdAndName(userId, categoryName)
             .orElse(null);
         if (existingCategory != null) {
             return existingCategory.getId();

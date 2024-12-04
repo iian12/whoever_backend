@@ -95,8 +95,8 @@ public class JwtTokenProvider {
             }
 
             // 암호화된 memberId를 복호화한 후 Long 타입으로 변환합니다
-            String decryptedMemberId = EncryptionUtils.decrypt(encryptedUserId);
-            return Long.parseLong(decryptedMemberId);
+            String decryptedUserId = EncryptionUtils.decrypt(encryptedUserId);
+            return Long.parseLong(decryptedUserId);
 
         } catch (JwtException e) {
             // JWT 예외 처리
