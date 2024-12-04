@@ -7,8 +7,8 @@ import com.jygoh.whoever.domain.hashtag.dto.HashtagDto;
 import com.jygoh.whoever.domain.hashtag.model.Hashtag;
 import com.jygoh.whoever.domain.hashtag.repository.HashtagRepository;
 import com.jygoh.whoever.domain.hashtag.service.HashtagService;
-import com.jygoh.whoever.domain.member.entity.Member;
-import com.jygoh.whoever.domain.member.repository.MemberRepository;
+import com.jygoh.whoever.domain.user.entity.Users;
+import com.jygoh.whoever.domain.user.repository.UserRepository;
 import com.jygoh.whoever.domain.post.dto.PostCreateRequestDto;
 import com.jygoh.whoever.domain.post.dto.PostDetailResponseDto;
 import com.jygoh.whoever.domain.post.dto.PostListResponseDto;
@@ -48,7 +48,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final HashtagService hashtagService;
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
     private final ViewRepository viewRepository;
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
@@ -56,14 +56,14 @@ public class PostServiceImpl implements PostService {
     private final CategoryService categoryService;
 
     public PostServiceImpl(PostRepository postRepository, HashtagService hashtagService,
-        JwtTokenProvider jwtTokenProvider, MemberRepository memberRepository,
+        JwtTokenProvider jwtTokenProvider, UserRepository userRepository,
         ViewRepository viewRepository, PostLikeRepository postLikeRepository,
         CommentRepository commentRepository, HashtagRepository hashtagRepository,
         CategoryService categoryService) {
         this.postRepository = postRepository;
         this.hashtagService = hashtagService;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.memberRepository = memberRepository;
+        this.userRepository = userRepository;
         this.viewRepository = viewRepository;
         this.postLikeRepository = postLikeRepository;
         this.commentRepository = commentRepository;
@@ -86,8 +86,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Long createPost(PostCreateRequestDto requestDto, String token) {
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
-        Member author = memberRepository.findById(memberId)
+        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
+        Users author = userRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
         List<Hashtag> hashtags = hashtagService.findOrCreateHashtags(requestDto.getHashtagNames());
         List<Long> hashtagIds = hashtags.stream().map(Hashtag::getId).collect(Collectors.toList());
@@ -103,7 +103,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Long updatePost(Long postId, PostUpdateRequestDto requestDto, String token) {
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         if (!post.getAuthorId().equals(memberId)) {
@@ -122,7 +122,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deletePost(Long postId, String token) {
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         if (!post.getAuthorId().equals(memberId)) {
@@ -138,8 +138,8 @@ public class PostServiceImpl implements PostService {
         // 각 게시글의 작성자 닉네임을 조회하여 DTO로 변환
         return postPage.stream().map(post -> {
             // 작성자의 닉네임 조회
-            String authorNickname = memberRepository.findById(post.getAuthorId())
-                .map(Member::getNickname).orElse("Unknown");
+            String authorNickname = userRepository.findById(post.getAuthorId())
+                .map(Users::getNickname).orElse("Unknown");
             // Post와 닉네임을 DTO에 전달
             return PostListResponseDto.builder().post(post).authorNickname(authorNickname).build();
         }).collect(Collectors.toList());
@@ -149,43 +149,38 @@ public class PostServiceImpl implements PostService {
     public List<PostListResponseDto> getPostsByCategory(Long categoryId) {
         List<Post> posts = postRepository.findAllByCategoryId(categoryId);
         return posts.stream().map(post -> {
-            String authorNickname = memberRepository.findById(post.getAuthorId())
-                .map(Member::getNickname).orElse("Unknown");
+            String authorNickname = userRepository.findById(post.getAuthorId())
+                .map(Users::getNickname).orElse("Unknown");
             return PostListResponseDto.builder().post(post).authorNickname(authorNickname).build();
         }).collect(Collectors.toList());
     }
 
     @Override
     public PostDetailResponseDto getPostDetail(Long postId, String token) {
-        Long memberId = null;
-        if (token != null && !token.isEmpty()) {
-            memberId = jwtTokenProvider.getMemberIdFromToken(token);
-        }
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         post.incrementViewCount();
-        postRepository.save(post);
-        if (memberId != null) {
-            Optional<View> existingView = viewRepository.findByMemberIdAndPostId(memberId, postId);
+        if (userId != null) {
+            Optional<View> existingView = viewRepository.findByUserIdAndPostId(userId, postId);
             View view;
             if (existingView.isPresent()) {
                 view = existingView.get();
                 view.update();
             } else {
-                view = View.builder().memberId(memberId).postId(postId).build();
+                view = View.builder().userId(userId).postId(postId).build();
                 viewRepository.save(view);
             }
         }
-        // 포스트, 댓글 및 해시태그 정보를 조회
-        String authorNickname = memberRepository.findById(post.getAuthorId())
-            .map(Member::getNickname).orElse("Unknown");
+        String authorNickname = userRepository.findById(post.getAuthorId())
+            .map(Users::getNickname).orElse("Unknown");
         List<CommentDto> commentDtos = commentRepository.findByPostId(postId).stream()
-            .map(comment -> new CommentDto(comment, memberRepository)).collect(Collectors.toList());
+            .map(comment -> new CommentDto(comment, userRepository)).collect(Collectors.toList());
         List<HashtagDto> hashtagDtos = hashtagRepository.findAllById(post.getHashtagIds()).stream()
             .map(HashtagDto::new).collect(Collectors.toList());
         boolean existLike = false;
-        if (memberId != null) {
-            existLike = postLikeRepository.existsByPostIdAndMemberId(postId, memberId);
+        if (userId != null) {
+            existLike = postLikeRepository.existsByPostIdAndMemberId(postId, userId);
             log.info(String.valueOf(existLike));
         }
         return PostDetailResponseDto.builder().id(post.getId()).title(post.getTitle())
@@ -199,19 +194,17 @@ public class PostServiceImpl implements PostService {
     public void toggleLike(Long postId, String token) {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Long memberId = jwtTokenProvider.getUserIdFromToken(token);
         Optional<PostLike> existingLike = postLikeRepository.findByPostIdAndMemberId(postId,
             memberId);
         if (existingLike.isPresent()) {
-            // User has already liked the post, so remove the like
             post.decrementLikeCount();
             postRepository.save(post);
             postLikeRepository.delete(existingLike.get());
         } else {
-            // User has not liked the post, so add a new like
             post.incrementLikeCount();
             postRepository.save(post);
-            PostLike postLike = PostLike.builder().postId(postId).memberId(memberId).build();
+            PostLike postLike = PostLike.builder().postId(postId).userId(memberId).build();
             postLikeRepository.save(postLike);
         }
     }

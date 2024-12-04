@@ -11,8 +11,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface ViewRepository extends JpaRepository<View, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<View> findByMemberIdAndPostId(Long memberId, Long postId);
+    Optional<View> findByUserIdAndPostId(Long memberId, Long postId);
 
-    @Query("SELECt v FROM View v WHERE v.memberId = :memberId ORDER BY v.updatedAt DESC")
-    List<View> findTop10ByMemberIdOrderByUpdatedAtDesc(@Param("memberId") Long memberId);
+    @Query("SELECt v FROM View v WHERE v.userId = :userId ORDER BY v.updatedAt DESC")
+    List<View> findTop10ByUserIdOrderByUpdatedAtDesc(@Param("userId") Long userId);
 }

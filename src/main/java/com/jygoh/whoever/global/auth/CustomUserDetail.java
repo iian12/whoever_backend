@@ -1,6 +1,6 @@
 package com.jygoh.whoever.global.auth;
 
-import com.jygoh.whoever.domain.member.entity.Member;
+import com.jygoh.whoever.domain.user.entity.Users;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -10,19 +10,19 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 public class CustomUserDetail implements UserDetails, OAuth2User {
 
-    private final Member member;
+    private final Users users;
     private final OAuth2User oAuth2User;
     private final Long userId;
 
     // 생성자
-    public CustomUserDetail(Member member, Long userId) {
-        this.member = member;
+    public CustomUserDetail(Users users, Long userId) {
+        this.users = users;
         this.oAuth2User = null;
         this.userId = userId;
     }
 
     public CustomUserDetail(OAuth2User oAuth2User, Long userId) {
-        this.member = null;
+        this.users = null;
         this.oAuth2User = oAuth2User;
         this.userId = userId;
     }
@@ -30,7 +30,7 @@ public class CustomUserDetail implements UserDetails, OAuth2User {
     // UserDetails 메서드
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (member != null) {
+        if (users != null) {
             // 반환할 권한 목록 구현
             return null; // 실제 권한을 반환하도록 수정
         } else if (oAuth2User != null) {
@@ -41,12 +41,12 @@ public class CustomUserDetail implements UserDetails, OAuth2User {
 
     @Override
     public String getPassword() {
-        return member != null ? member.getPassword() : null;
+        return users != null ? users.getPassword() : null;
     }
 
     @Override
     public String getUsername() {
-        return member != null ? member.getEmail() : Objects.requireNonNull(oAuth2User).getAttribute("email");
+        return users != null ? users.getEmail() : Objects.requireNonNull(oAuth2User).getAttribute("email");
     }
 
     @Override
@@ -80,15 +80,15 @@ public class CustomUserDetail implements UserDetails, OAuth2User {
         return oAuth2User != null ? oAuth2User.getName() : null;
     }
 
-    public Long getMemberId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public Member getMember() {
-        return member;
+    public Users getMember() {
+        return users;
     }
 
     public boolean isSignUp() {
-        return member != null && member.isSignUp();
+        return users != null && users.isSignUp();
     }
 }

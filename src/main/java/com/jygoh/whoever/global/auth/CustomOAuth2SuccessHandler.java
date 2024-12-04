@@ -1,12 +1,14 @@
 package com.jygoh.whoever.global.auth;
 
-import com.jygoh.whoever.domain.member.entity.Member;
-import com.jygoh.whoever.domain.member.repository.MemberRepository;
+import com.jygoh.whoever.domain.user.entity.Users;
+import com.jygoh.whoever.domain.user.repository.UserRepository;
+import com.jygoh.whoever.global.EncodeDecode;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -15,12 +17,14 @@ import org.springframework.stereotype.Component;
 public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
+    private final EncodeDecode encodeDecode;
 
     public CustomOAuth2SuccessHandler(JwtTokenProvider jwtTokenProvider,
-        MemberRepository memberRepository) {
+        UserRepository userRepository, EncodeDecode encodeDecode) {
         this.jwtTokenProvider = jwtTokenProvider;
-        this.memberRepository = memberRepository;
+        this.userRepository = userRepository;
+        this.encodeDecode = encodeDecode;
     }
 
     @Override
@@ -28,22 +32,22 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         Authentication authentication) throws IOException {
         CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
 
-        Long memberId = userDetail.getMemberId();
-        Member member = memberRepository.findById(memberId)
+        Long userId = userDetail.getUserId();
+        Users users = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not Found"));
 
-        if (!member.isSignUp()) {
-            response.sendRedirect("http://localhost:3000/signup/nickname");
+        if (!users.isSignUp()) {
+            String encodedUserId = encodeDecode.encode(userId);
+            response.setHeader("X-USER-ID", encodedUserId);
+            response.setStatus(HttpStatus.PRECONDITION_FAILED.value());
         } else {
-            String accessToken = jwtTokenProvider.createAccessToken(userDetail.getMemberId());
-            String refreshToken = jwtTokenProvider.createRefreshToken(userDetail.getMemberId());
+            String accessToken = jwtTokenProvider.createAccessToken(userDetail.getUserId());
+            String refreshToken = jwtTokenProvider.createRefreshToken(userDetail.getUserId());
             Cookie accessTokenCookie = createCookie("accessToken", accessToken);
             Cookie refreshTokenCookie = createCookie("refreshToken", refreshToken);
-            // 쿠키를 응답에 추가
+            response.setStatus(HttpStatus.OK.value());
             response.addCookie(accessTokenCookie);
             response.addCookie(refreshTokenCookie);
-            // 클라이언트를 리다이렉트
-            response.sendRedirect("http://localhost:3000/login/callback");
         }
     }
 

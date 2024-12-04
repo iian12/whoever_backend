@@ -22,8 +22,8 @@ public class View {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 단일 기본키
 
-    @Column(name = "member_id", nullable = false)
-    private Long memberId;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "post_id", nullable = false)
     private Long postId;
@@ -35,8 +35,8 @@ public class View {
     private LocalDateTime updatedAt;
 
     @Builder
-    public View(Long memberId, Long postId) {
-        this.memberId = memberId;
+    public View(Long userId, Long postId) {
+        this.userId = userId;
         this.postId = postId;
     }
 

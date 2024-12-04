@@ -8,6 +8,6 @@ public interface CategoryService {
 
     Long createCategory(String token, String categoryName);
 
-    Long createOrUpdateDefaultCategory(Long memberId);
+    Long createOrUpdateDefaultCategory(Long userId);
 
 }

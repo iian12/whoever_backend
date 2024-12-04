@@ -20,14 +20,14 @@ public class Category {
 
     private String name;
 
-    private Long memberId;
+    private Long userId;
 
     private int postCount;
 
     @Builder
-    public Category(String name, Long memberId, int postCount) {
+    public Category(String name, Long userId, int postCount) {
         this.name = name;
-        this.memberId = memberId;
+        this.userId = userId;
         this.postCount = postCount;
     }
 

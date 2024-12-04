@@ -1,8 +1,8 @@
 package com.jygoh.whoever.global.auth;
 
-import com.jygoh.whoever.domain.member.dto.MemberLoginRequestDto;
-import com.jygoh.whoever.domain.member.entity.Member;
-import com.jygoh.whoever.domain.member.repository.MemberRepository;
+import com.jygoh.whoever.domain.user.dto.UserLoginReqDto;
+import com.jygoh.whoever.domain.user.entity.Users;
+import com.jygoh.whoever.domain.user.repository.UserRepository;
 import com.jygoh.whoever.global.security.jwt.JwtTokenProvider;
 import com.jygoh.whoever.global.security.jwt.RefreshToken;
 import com.jygoh.whoever.global.security.jwt.RefreshTokenRepository;
@@ -22,32 +22,32 @@ public class AuthServiceImpl implements AuthService {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
 
     public AuthServiceImpl(JwtTokenProvider jwtTokenProvider,
-        RefreshTokenRepository refreshTokenRepository, MemberRepository memberRepository,
+        RefreshTokenRepository refreshTokenRepository, UserRepository userRepository,
         BCryptPasswordEncoder passwordEncoder, UserDetailsService userDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.refreshTokenRepository = refreshTokenRepository;
-        this.memberRepository = memberRepository;
+        this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userDetailsService = userDetailsService;
     }
 
     @Override
-    public TokenResponseDto login(MemberLoginRequestDto requestDto) {
+    public TokenResponseDto login(UserLoginReqDto requestDto) {
         // 사용자 존재 여부 확인
-        Member member = memberRepository.findByEmail(requestDto.getEmail())
+        Users users = userRepository.findByEmail(requestDto.getEmail())
             .orElseThrow(() -> new BadCredentialsException("User does not exist"));
 
         // 사용자 정보 로드
         UserDetails userDetails = userDetailsService.loadUserByUsername(requestDto.getEmail());
         // 비밀번호 검증
         if (passwordEncoder.matches(requestDto.getPassword(), userDetails.getPassword())) {
-            String accessToken = jwtTokenProvider.createAccessToken(member.getId());
-            String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
+            String accessToken = jwtTokenProvider.createAccessToken(users.getId());
+            String refreshToken = jwtTokenProvider.createRefreshToken(users.getId());
 
             // TokenResponseDto 반환
             return TokenResponseDto.builder()
@@ -65,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
         if (!jwtTokenProvider.validateToken(refreshToken)) {
             throw new IllegalArgumentException("Invalid refresh token");
         }
-        Long memberId = jwtTokenProvider.getMemberIdFromToken(refreshToken);
+        Long memberId = jwtTokenProvider.getUserIdFromToken(refreshToken);
         RefreshToken existingRefreshToken = refreshTokenRepository.findByMemberId(memberId)
             .orElseThrow(
                 () -> new IllegalArgumentException("Refresh token does not exist or is invalid"));
